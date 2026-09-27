@@ -15,94 +15,114 @@
     });
   }
 
-  // Video Progress Autosave
-  var lessonVideo = document.getElementById('lesson-video');
-  if (lessonVideo) {
-    var lessonId = lessonVideo.getAttribute('data-lesson-id');
+  // ===== Lesson progress =====
+  // One reporter, two sources: a native <video> element, or a YouTube IFrame
+  // player. Previously this only ran for <video>, so a YouTube lesson could be
+  // watched but never accumulated the watch time needed to complete.
+  function makeReporter(lessonId, initialPosition) {
     var saveUrl = '/lessons/' + lessonId + '/progress/';
-    // Seed from the saved resume point so the first heartbeat after a resume
-    // reports only newly-watched time, not the whole skipped-back position.
-    var lastSaved = parseInt(lessonVideo.getAttribute('data-resume') || '0', 10) || 0;
+    var lastSaved = parseInt(initialPosition || '0', 10) || 0;
     var watchedSinceSave = 0;
-    var saveTimer = null;
 
-    function saveProgress(position, completed, watched) {
+    function save(position, completed) {
+      var watched = watchedSinceSave;
+      watchedSinceSave = 0;
       fetch(saveUrl, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCookie('csrftoken')
-        },
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
         credentials: 'same-origin',
-        body: JSON.stringify({
-          position: position,
-          completed: completed || false,
-          watched: watched || 0
+        keepalive: !!completed,
+        body: JSON.stringify({ position: position, completed: !!completed, watched: watched })
+      }).then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (d.progress_percent !== undefined) updateProgressBar(d.progress_percent);
         })
-      }).then(function (resp) {
-        return resp.json();
-      }).then(function (data) {
-        if (data.progress_percent !== undefined) {
-          updateProgressBar(data.progress_percent);
+        .catch(function (e) { console.error('Progress save error:', e); });
+    }
+
+    return {
+      tick: function () {
+        var current = arguments[0];
+        if (current - lastSaved >= 10) {
+          watchedSinceSave = current - lastSaved;
+          lastSaved = current;
+          save(current, false);
         }
-      }).catch(function (err) {
-        console.error('Progress save error:', err);
-      });
+      },
+      flush: function (current) { save(current, false); },
+      finish: function (current) { save(current, true); },
+      position: function () { return lastSaved; }
+    };
+  }
+
+  function updateProgressBar(percent) {
+    var bars = document.querySelectorAll('[data-progress-percent]');
+    bars.forEach(function (bar) {
+      bar.style.width = percent + '%';
+      var label = document.querySelector('[data-progress-text]');
+      if (label) label.textContent = percent + '%';
+    });
+  }
+
+  var lessonVideo = document.getElementById('lesson-video');
+  var lessonEmbed = document.getElementById('lesson-embed');
+
+  if (lessonVideo) {
+    var r = makeReporter(lessonVideo.getAttribute('data-lesson-id'),
+                         lessonVideo.getAttribute('data-resume'));
+    var resume = parseInt(lessonVideo.getAttribute('data-resume') || '0', 10);
+    if (resume > 5) {
+      lessonVideo.addEventListener('loadedmetadata', function () { lessonVideo.currentTime = resume; });
     }
-
-    function updateProgressBar(percent) {
-      var bars = document.querySelectorAll('[data-progress-percent]');
-      bars.forEach(function (bar) {
-        bar.style.width = percent + '%';
-        var label = document.querySelector('[data-progress-text]');
-        if (label) label.textContent = percent + '%';
-      });
-    }
-
-    // Throttled progress save every 10 seconds
-    lessonVideo.addEventListener('timeupdate', function () {
-      var current = Math.floor(lessonVideo.currentTime);
-      if (current - lastSaved >= 10) {
-        watchedSinceSave = current - lastSaved;
-        lastSaved = current;
-        saveProgress(current, false, watchedSinceSave);
-        watchedSinceSave = 0;
-      }
-    });
-
-    // Save on pause/end
-    lessonVideo.addEventListener('pause', function () {
-      var current = Math.floor(lessonVideo.currentTime);
-      saveProgress(current, false, watchedSinceSave);
-      watchedSinceSave = 0;
-    });
-
-    // Mark completed when video ends
-    lessonVideo.addEventListener('ended', function () {
-      var current = Math.floor(lessonVideo.currentTime);
-      saveProgress(current, true, watchedSinceSave);
-      watchedSinceSave = 0;
-    });
-
-    // Save on page unload (keepalive fetch preserves CSRF header; sendBeacon cannot)
+    lessonVideo.addEventListener('timeupdate', function () { r.tick(Math.floor(lessonVideo.currentTime)); });
+    lessonVideo.addEventListener('pause', function () { r.flush(Math.floor(lessonVideo.currentTime)); });
+    lessonVideo.addEventListener('ended', function () { r.finish(Math.floor(lessonVideo.currentTime)); });
     window.addEventListener('beforeunload', function () {
-      if (lessonVideo.currentTime > 0) {
-        fetch(saveUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken')
-          },
-          credentials: 'same-origin',
-          keepalive: true,
-          body: JSON.stringify({
-            position: Math.floor(lessonVideo.currentTime),
-            completed: false,
-            watched: watchedSinceSave
-          })
-        }).catch(function () {});
-      }
+      if (lessonVideo.currentTime > 0) r.flush(Math.floor(lessonVideo.currentTime));
     });
+  } else if (lessonEmbed && lessonEmbed.getAttribute('data-provider') === 'youtube') {
+    // YouTube's IFrame API is the only supported way to read playback position
+    // across the origin boundary.
+    window.onYouTubeIframeAPIReady = function () {
+      var player = new YT.Player(lessonEmbed);
+      var rep = null;
+      player.on('onReady', function () {
+        rep = makeReporter(lessonEmbed.getAttribute('data-lesson-id'),
+                           lessonEmbed.getAttribute('data-resume'));
+        var resume = parseInt(lessonEmbed.getAttribute('data-resume') || '0', 10);
+        if (resume > 5) player.seekTo(resume, true);
+      });
+      player.on('onStateChange', function (e) {
+        if (!rep) return;
+        if (e.data === YT.PlayerState.PLAYING) {
+          // Poll while playing; the embed gives no timeupdate event.
+          if (!rep._timer) {
+            rep._timer = setInterval(function () {
+              var t = Math.floor(player.getCurrentTime() || 0);
+              if (t > 0) rep.tick(t);
+            }, 5000);
+          }
+        } else {
+          if (rep._timer) { clearInterval(rep._timer); rep._timer = null; }
+          var t = Math.floor(player.getCurrentTime() || 0);
+          if (e.data === YT.PlayerState.ENDED) rep.finish(t);
+          else if (t > 0) rep.flush(t);
+        }
+      });
+    };
+    if (window.YT && window.YT.Player) {
+      window.onYouTubeIframeAPIReady();
+    } else {
+      var s = document.createElement('script');
+      s.src = 'https://www.youtube.com/iframe_api';
+      s.async = true;
+      document.head.appendChild(s);
+    }
+  } else if (lessonEmbed) {
+    // Other providers: mark complete on open, since position is unknowable.
+    var rr = makeReporter(lessonEmbed.getAttribute('data-lesson-id'),
+                          lessonEmbed.getAttribute('data-resume'));
+    rr.finish(Math.max(1, parseInt(lessonEmbed.getAttribute('data-resume') || '1', 10)));
   }
 
   // ===== Sidebar drawer (mobile) =====

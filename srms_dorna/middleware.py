@@ -34,7 +34,9 @@ class SecurityHeadersMiddleware:
         if isinstance(response, HttpResponse):
             csp = (
                 "default-src 'self'; "
-                f"script-src 'self' 'nonce-{nonce}' https://cdn.jsdelivr.net https://www.gstatic.com; "
+                # www.youtube.com is needed for the IFrame API, which is how
+                # playback position is read so YouTube lessons can complete.
+                f"script-src 'self' 'nonce-{nonce}' https://cdn.jsdelivr.net https://www.gstatic.com https://www.youtube.com; "
                 "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
                 "font-src 'self' https://fonts.gstatic.com; "
                 "img-src 'self' data: blob:; "

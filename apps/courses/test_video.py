@@ -14,7 +14,8 @@ class ResolveVideoTests(SimpleTestCase):
         r = resolve_video("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
         self.assertEqual(r["kind"], "embed")
         self.assertEqual(r["provider"], "youtube")
-        self.assertEqual(r["embed_url"], "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ")
+        self.assertEqual(r["embed_url"],
+                         "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?enablejsapi=1&rel=0")
         self.assertEqual(r["src"], "")
 
     def test_short_youtube_url_forms(self):
@@ -26,7 +27,7 @@ class ResolveVideoTests(SimpleTestCase):
         ):
             with self.subTest(url=url):
                 self.assertEqual(resolve_video(url)["embed_url"],
-                                 "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ")
+                                 "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?enablejsapi=1&rel=0")
 
     def test_vimeo_becomes_an_embed(self):
         r = resolve_video("https://vimeo.com/123456789")
@@ -47,3 +48,31 @@ class ResolveVideoTests(SimpleTestCase):
     def test_a_watch_url_without_an_id_is_not_treated_as_a_video(self):
         # "watch" with no v= must not silently become a broken embed.
         self.assertEqual(resolve_video("https://www.youtube.com/watch")["kind"], "file")
+
+
+class EmbedProgressTests(SimpleTestCase):
+    """A YouTube lesson must be completable.
+
+    The progress heartbeat used to run only when a <video> element existed, so an
+    embedded YouTube lesson could be watched forever and never complete - the
+    course would never finish and no certificate would be issued.
+    """
+
+    def test_youtube_embed_enables_the_iframe_api(self):
+        url = resolve_video("https://www.youtube.com/watch?v=dQw4w9WgXcQ")["embed_url"]
+        self.assertIn("enablejsapi=1", url,
+                      "without enablejsapi the page cannot read playback position")
+
+    def test_lesson_page_wires_an_embed_hook(self):
+        import re
+        from pathlib import Path
+        tpl = Path("templates/courses/lesson.html").read_text(encoding="utf-8")
+        self.assertIn('id="lesson-embed"', tpl)
+        self.assertIn('data-provider="{{ video.provider }}"', tpl)
+        self.assertIn("data-resume=", tpl)
+
+    def test_csp_allows_the_youtube_iframe_api(self):
+        from pathlib import Path
+        mw = Path("srms_dorna/middleware.py").read_text(encoding="utf-8")
+        self.assertIn("https://www.youtube.com;", mw,
+                      "script-src must allow the IFrame API or progress silently fails")

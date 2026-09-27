@@ -55,7 +55,10 @@ def resolve_video(url):
         return {
             "kind": "embed",
             "src": "",
-            "embed_url": f"https://www.youtube-nocookie.com/embed/{yt}",
+            # enablejsapi=1 lets the page read playback position via the IFrame
+            # API, which is the only way progress tracking works for a YouTube
+            # embed - without it a lesson can be watched but never completed.
+            "embed_url": f"https://www.youtube-nocookie.com/embed/{yt}?enablejsapi=1&rel=0",
             "provider": "youtube",
         }
     if vimeo := _vimeo_id(url):

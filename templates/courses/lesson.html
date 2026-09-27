@@ -14,11 +14,18 @@
 
 {% if lesson.lesson_type == 'video' and video.kind == 'embed' %}
 <div class="video-wrapper">
-    <iframe class="video-frame" src="{{ video.embed_url }}"
+    <iframe id="lesson-embed" class="video-frame" src="{{ video.embed_url }}"
+            data-provider="{{ video.provider }}" data-lesson-id="{{ lesson.id }}"
+            data-resume="{{ progress.last_position_seconds }}"
             title="{{ lesson.title }}" loading="lazy"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowfullscreen></iframe>
 </div>
+{% if video.provider == 'youtube' %}
+<div id="yt-api-loader" data-src="https://www.youtube.com/iframe_api" hidden></div>
+{% else %}
+<p class="video-note">{% trans "Playback position cannot be tracked for embedded videos, so this lesson is marked complete when you open it." %}</p>
+{% endif %}
 {% elif lesson.lesson_type == 'video' and video.kind == 'file' %}
 <div class="video-wrapper">
     <video id="lesson-video" data-lesson-id="{{ lesson.id }}"
