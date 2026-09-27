@@ -75,7 +75,10 @@ class DatabaseUploadStorage(Storage):
         return self._model().objects.filter(name=name).values_list("size", flat=True).first() or 0
 
     def url(self, name):
-        return f"/uploads/{name}"
+        # The app serves /media/<name> through `protected_media`, which enforces
+        # the same enrollment check as the lesson view. Pointing anywhere else
+        # would either 404 or bypass authorization.
+        return f"/media/{name}"
 
     def listdir(self, path):
         return [], []

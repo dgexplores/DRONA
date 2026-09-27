@@ -101,3 +101,12 @@ class DatabaseUploadStorageTests(TestCase):
         )
         self.assertIn("pdf_file", form.errors)
         self.assertFalse(StoredUpload.objects.exists())
+
+
+class StorageUrlTests(TestCase):
+    def test_url_points_at_the_permission_checked_media_route(self):
+        """The widget's "Currently" link must hit /media/, which runs the
+        enrollment check - not a bare /uploads/ path that would 404."""
+        from apps.courses.storage import DatabaseUploadStorage
+        url = DatabaseUploadStorage().url("sop_documents/x.pdf")
+        self.assertEqual(url, "/media/sop_documents/x.pdf")
