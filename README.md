@@ -271,7 +271,9 @@ There is exactly **one** env var for the admin password: `DJANGO_ADMIN_PASSWORD`
 (default `Admin12345`). `seed.py` and the `set_admin_password` command both read it, so a local
 seed and a deployed service can never disagree — whichever runs last wins by design. Staff
 passwords are hardcoded `drona123` in the seed.
-password in production.
+
+`set_admin_password` runs on every boot, so changing the env var and redeploying is what
+actually rotates the production admin password. That is the intended mechanism.
 
 ---
 
