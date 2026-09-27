@@ -6,6 +6,11 @@ and you are current.
 
 **Last updated:** 2026-09-23 (session 6 — backlog drain: fast boot, triple keep-alive, stable Gemini pin, scheduler on, venv 3.12, media purge; email delivery still blocked on SMTP creds)
 
+**Later sessions:** uploaded lesson videos + HTTP Range serving (`00963f5`), and the 9-clip
+"Workplace Communication & Conduct" course live with all 7 staff enrolled. Deliberately
+**not** built, now written up in `ROADMAP.md`: the per-employee watch-progress report,
+YouTube as a primary source, and Google Drive links (cannot be position-tracked).
+
 ---
 
 ## 1. Where things stand

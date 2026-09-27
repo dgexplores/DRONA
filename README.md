@@ -6,6 +6,10 @@ Their Head of Department and the Super Admin manage the courses and track progre
 
 **Live now:** <https://dronav2.onrender.com> · **Interface language:** English / हिन्दी
 
+> **Planned work** — the watch-progress report, YouTube-hosted lessons, and why Google Drive
+> links cannot be position-tracked are written up in [`ROADMAP.md`](ROADMAP.md). Agreed and
+> deliberately not built yet.
+
 ---
 
 ## 👥 Who uses it
