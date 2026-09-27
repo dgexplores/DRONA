@@ -5,6 +5,18 @@ from apps.users.models import StaffUser, Department
 from apps.courses.models import Category, Course, Module, Lesson, Enrollment, TrainingSession
 
 
+def apply_labels(form, labels):
+    """Set translated labels/help text on a form in one place.
+
+    Model-derived labels are plain English strings baked in at import time, so they
+    ignore the active language. gettext_lazy defers translation to render time.
+    """
+    for name, label in labels.items():
+        if name in form.fields:
+            form.fields[name].label = label
+    return form
+
+
 class CreateUserForm(forms.ModelForm):
     """Provisions an HR / HOD / staff account (super admin only)."""
 
@@ -54,7 +66,7 @@ class CourseForm(forms.ModelForm):
         fields = ['title', 'title_hi', 'description', 'description_hi', 'category', 'is_mandatory', 'target_departments']
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'e.g. Laboratory Safety & Handling'}),
-            'title_hi': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Hindi title (optional)'}),
+            'title_hi': forms.TextInput(attrs={'class': 'form-input'}),
             'description': forms.Textarea(attrs={'class': 'form-input', 'rows': 3}),
             'description_hi': forms.Textarea(attrs={'class': 'form-input', 'rows': 3}),
             'category': forms.Select(attrs={'class': 'form-input'}),
@@ -64,6 +76,19 @@ class CourseForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Model-derived labels arrive in English ("Title hi", "Description hi") and
+        # are not translated, so the content screens stayed half-English in Hindi
+        # mode - exactly where an HOD does their work. gettext_lazy resolves per
+        # request, so one declaration covers every form below.
+        apply_labels(self, {
+            'title': _("Title"),
+            'title_hi': _("Title (Hindi)"),
+            'description': _("Description"),
+            'description_hi': _("Description (Hindi)"),
+            'category': _("Category"),
+            'is_mandatory': _("Mandatory for all staff"),
+            'target_departments': _("Restrict to departments"),
+        })
         self.fields['category'].empty_label = _("Select category")
         if self.instance and self.instance.pk:
             self.fields['target_departments'].help_text = _("Leave empty to make this course available to all departments.")
@@ -75,9 +100,17 @@ class ModuleForm(forms.ModelForm):
         fields = ['title', 'title_hi', 'order']
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'e.g. Module 1: Introduction'}),
-            'title_hi': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Hindi title (optional)'}),
+            'title_hi': forms.TextInput(attrs={'class': 'form-input'}),
             'order': forms.NumberInput(attrs={'class': 'form-input', 'min': 1}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        apply_labels(self, {
+            'title': _("Title"),
+            'title_hi': _("Title (Hindi)"),
+            'order': _("Order"),
+        })
 
 
 class LessonForm(forms.ModelForm):
@@ -86,24 +119,46 @@ class LessonForm(forms.ModelForm):
         fields = ['title', 'title_hi', 'lesson_type', 'video_url', 'pdf_file', 'sop_text', 'duration_minutes', 'order']
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'e.g. Personal Protective Equipment'}),
-            'title_hi': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'Hindi title (optional)'}),
+            'title_hi': forms.TextInput(attrs={'class': 'form-input'}),
             'lesson_type': forms.Select(attrs={'class': 'form-input'}),
-            'video_url': forms.URLInput(attrs={'class': 'form-input', 'placeholder': 'https://youtube.com/watch?v=...'}),
+            'video_url': forms.URLInput(attrs={'class': 'form-input'}),
             'pdf_file': forms.ClearableFileInput(attrs={'class': 'form-input'}),
-            'sop_text': forms.Textarea(attrs={'class': 'form-input', 'rows': 4, 'placeholder': 'Pasted text from the SOP manual (used for AI quizzes)'}),
+            'sop_text': forms.Textarea(attrs={'class': 'form-input', 'rows': 4}),
             'duration_minutes': forms.NumberInput(attrs={'class': 'form-input', 'min': 1}),
             'order': forms.NumberInput(attrs={'class': 'form-input', 'min': 1}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        apply_labels(self, {
+            'title': _("Title"),
+            'title_hi': _("Title (Hindi)"),
+            'lesson_type': _("Lesson type"),
+            'video_url': _("Video link"),
+            'pdf_file': _("SOP PDF"),
+            'sop_text': _("SOP text"),
+            'duration_minutes': _("Duration (minutes)"),
+            'order': _("Order"),
+        })
+        self.fields['lesson_type'].empty_label = _("Select lesson type")
+        self.fields['title_hi'].help_text = _("Leave blank to fall back to the English title.")
+        self.fields['video_url'].help_text = _(
+            "YouTube, Vimeo, or a direct link to an .mp4 / .webm / .m3u8 file. "
+            "YouTube and Vimeo links play in an embedded player."
+        )
+        self.fields['sop_text'].help_text = _("Used to generate AI quiz questions from this SOP.")
 
     def clean(self):
         cleaned = super().clean()
         lesson_type = cleaned.get('lesson_type')
         video_url = cleaned.get('video_url', '')
         pdf_file = cleaned.get('pdf_file')
+        sop_text = cleaned.get('sop_text', '')
+        existing_pdf = getattr(self.instance, 'pdf_file', None)
         if lesson_type == 'video' and not video_url:
-            self.add_error('video_url', _("A video URL is required for video lessons."))
-        if lesson_type == 'pdf' and not pdf_file:
-            self.add_error('pdf_file', _("A PDF file is required for SOP PDF lessons."))
+            self.add_error('video_url', _("A video link is required for video lessons."))
+        if lesson_type == 'pdf' and not (pdf_file or sop_text or existing_pdf):
+            self.add_error('pdf_file', _("Upload a PDF or paste the SOP text for SOP PDF lessons."))
         return cleaned
 
 

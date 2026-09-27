@@ -12,6 +12,7 @@ import logging
 from datetime import datetime as dt, timedelta as td
 
 from apps.courses.models import Course, Category, Module, Lesson, Enrollment, LessonProgress, TrainingSession
+from apps.courses.video import resolve_video
 from apps.users.models import Department, StaffUser
 from apps.certificates.models import Certificate
 
@@ -189,6 +190,9 @@ def lesson_view(request, lesson_id):
         'progress': progress,
         'prev_lesson': prev_lesson,
         'next_lesson': next_lesson,
+        # A pasted YouTube/Vimeo link cannot be played by <video src>, so tell the
+        # template which kind of player to render.
+        'video': resolve_video(lesson.video_url),
     }
     return render(request, 'courses/lesson.html', context)
 

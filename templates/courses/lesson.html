@@ -12,12 +12,26 @@
     {{ course.title }} &mdash; {% trans "Module" %} {{ lesson.module.order }} &middot; {% trans "Lesson" %} {{ lesson.order }}
 </p>
 
-{% if lesson.lesson_type == 'video' and lesson.video_url %}
+{% if lesson.lesson_type == 'video' and video.kind == 'embed' %}
+<div class="video-wrapper">
+    <iframe class="video-frame" src="{{ video.embed_url }}"
+            title="{{ lesson.title }}" loading="lazy"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen></iframe>
+</div>
+{% elif lesson.lesson_type == 'video' and video.kind == 'file' %}
 <div class="video-wrapper">
     <video id="lesson-video" data-lesson-id="{{ lesson.id }}"
            data-resume="{{ progress.last_position_seconds }}"
-           src="{{ lesson.video_url }}"
-           controls preload="metadata"></video>
+           src="{{ video.src }}"
+           controls preload="metadata">
+        {% trans "Your browser cannot play this video format." %}
+    </video>
+    <p class="video-fallback"><a href="{{ video.src }}" download>{% trans "Download video" %}</a></p>
+</div>
+{% elif lesson.lesson_type == 'video' %}
+<div class="alert alert-warning">
+    {% trans "This lesson has no video attached yet. Ask your HOD to add one." %}
 </div>
 {% elif lesson.lesson_type == 'pdf' and lesson.pdf_file %}
 <div class="pdf-viewer">

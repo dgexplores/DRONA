@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-27 17:07+0530\n"
+"POT-Creation-Date: 2026-09-27 18:37+0530\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,43 +22,118 @@ msgstr ""
 msgid "Access restricted to HODs and HR Administrators."
 msgstr "पहुँच केवल विभागाध्यक्षों और एचआर प्रशासकों के लिए सीमित है।"
 
-#: apps/management/forms.py:15
+#: apps/management/forms.py:27
 msgid "Temporary password. Leave blank to auto-generate a random one."
-msgstr "अस्थायी पासवर्ड। खाली छोड़ने पर एक यादृच्छिक पासवर्ड अपने आप बन जाएगा।"
+msgstr ""
+"अस्थायी पासवर्ड। खाली छोड़ने पर एक यादृच्छिक पासवर्ड अपने आप बन जाएगा।"
 
-#: apps/management/forms.py:34
+#: apps/management/forms.py:46
 msgid "No department"
 msgstr "कोई विभाग नहीं"
 
-#: apps/management/forms.py:35
+#: apps/management/forms.py:47
 msgid "Uppercase letters/numbers only (e.g. HR001)."
 msgstr "केवल बड़े अक्षर और अंक (जैसे HR001)।"
 
-#: apps/management/forms.py:41
+#: apps/management/forms.py:53
 msgid "An account with this Employee ID already exists."
 msgstr "इस कर्मचारी आईडी वाला खाता पहले से मौजूद है।"
 
-#: apps/management/forms.py:47
+#: apps/management/forms.py:59
 msgid "An account with this email already exists."
 msgstr "इस ईमेल वाला खाता पहले से मौजूद है।"
 
-#: apps/management/forms.py:67
+#: apps/management/forms.py:84 apps/management/forms.py:110
+#: apps/management/forms.py:134
+msgid "Title"
+msgstr "शीर्षक"
+
+#: apps/management/forms.py:85 apps/management/forms.py:111
+#: apps/management/forms.py:135
+msgid "Title (Hindi)"
+msgstr "शीर्षक (हिन्दी)"
+
+#: apps/management/forms.py:86
+msgid "Description"
+msgstr "विवरण"
+
+#: apps/management/forms.py:87
+msgid "Description (Hindi)"
+msgstr "विवरण (हिन्दी)"
+
+#: apps/management/forms.py:88 templates/management/course_list.html:20
+msgid "Category"
+msgstr "श्रेणी"
+
+#: apps/management/forms.py:89
+msgid "Mandatory for all staff"
+msgstr "सभी कर्मचारियों के लिए अनिवार्य"
+
+#: apps/management/forms.py:90
+msgid "Restrict to departments"
+msgstr "विभागों तक सीमित करें"
+
+#: apps/management/forms.py:92
 msgid "Select category"
 msgstr "श्रेणी चुनें"
 
-#: apps/management/forms.py:69
+#: apps/management/forms.py:94
 msgid "Leave empty to make this course available to all departments."
 msgstr "इसे खाली छोड़ें ताकि यह पाठ्यक्रम सभी विभागों के लिए उपलब्ध हो।"
 
-#: apps/management/forms.py:104
-msgid "A video URL is required for video lessons."
-msgstr "वीडियो पाठ के लिए वीडियो URL आवश्यक है।"
+#: apps/management/forms.py:112 apps/management/forms.py:141
+msgid "Order"
+msgstr "क्रम"
 
-#: apps/management/forms.py:106
-msgid "A PDF file is required for SOP PDF lessons."
-msgstr "SOP PDF पाठ के लिए PDF फ़ाइल आवश्यक है।"
+#: apps/management/forms.py:136
+msgid "Lesson type"
+msgstr "पाठ का प्रकार"
 
-#: apps/management/forms.py:113 apps/management/forms.py:133
+#: apps/management/forms.py:137
+msgid "Video link"
+msgstr "वीडियो लिंक"
+
+#: apps/management/forms.py:138
+msgid "SOP PDF"
+msgstr "SOP पीडीएफ"
+
+#: apps/management/forms.py:139
+msgid "SOP text"
+msgstr "SOP पाठ"
+
+#: apps/management/forms.py:140
+msgid "Duration (minutes)"
+msgstr "अवधि (मिनट)"
+
+#: apps/management/forms.py:143
+msgid "Select lesson type"
+msgstr "पाठ का प्रकार चुनें"
+
+#: apps/management/forms.py:144
+msgid "Leave blank to fall back to the English title."
+msgstr "खाली छोड़ने पर अंग्रेज़ी शीर्षक दिखाया जाएगा।"
+
+#: apps/management/forms.py:146
+msgid ""
+"YouTube, Vimeo, or a direct link to an .mp4 / .webm / .m3u8 file. YouTube "
+"and Vimeo links play in an embedded player."
+msgstr ""
+"YouTube, Vimeo, या .mp4 / .webm / .m3u8 फ़ाइल का सीधा लिंक। YouTube और Vimeo"
+" लिंक एम्बेडेड प्लेयर में चलते हैं।"
+
+#: apps/management/forms.py:149
+msgid "Used to generate AI quiz questions from this SOP."
+msgstr "इस SOP से AI क्विज़ के प्रश्न बनाने के लिए उपयोग होता है।"
+
+#: apps/management/forms.py:159
+msgid "A video link is required for video lessons."
+msgstr "वीडियो पाठ के लिए वीडियो लिंक आवश्यक है।"
+
+#: apps/management/forms.py:161
+msgid "Upload a PDF or paste the SOP text for SOP PDF lessons."
+msgstr "SOP PDF पाठ के लिए PDF अपलोड करें या SOP पाठ चिपकाएँ।"
+
+#: apps/management/forms.py:168 apps/management/forms.py:188
 #: templates/certificates/my_certificates.html:29
 #: templates/certificates/my_certificates.html:63
 #: templates/courses/manager_dashboard.html:88
@@ -67,7 +142,7 @@ msgstr "SOP PDF पाठ के लिए PDF फ़ाइल आवश्य�
 msgid "Course"
 msgstr "पाठ्यक्रम"
 
-#: apps/management/forms.py:118 apps/users/forms.py:37
+#: apps/management/forms.py:173 apps/users/forms.py:37
 #: templates/analytics/hr_dashboard.html:75
 #: templates/analytics/hr_dashboard.html:147
 #: templates/certificates/my_certificates.html:20
@@ -75,20 +150,20 @@ msgstr "पाठ्यक्रम"
 msgid "Department"
 msgstr "विभाग"
 
-#: apps/management/forms.py:120
+#: apps/management/forms.py:175
 msgid "All departments (all active staff)"
 msgstr "सभी विभाग (सभी सक्रिय कर्मचारी)"
 
-#: apps/management/forms.py:128 templates/analytics/hr_dashboard.html:110
+#: apps/management/forms.py:183 templates/analytics/hr_dashboard.html:110
 #: templates/courses/manager_dashboard.html:87
 msgid "Employee"
 msgstr "कर्मचारी"
 
-#: apps/management/forms.py:140
+#: apps/management/forms.py:195
 msgid "Choose ..."
 msgstr "चुनें ..."
 
-#: apps/management/forms.py:160
+#: apps/management/forms.py:215
 msgid "No linked course (optional)"
 msgstr "कोई संबद्ध पाठ्यक्रम नहीं (वैकल्पिक)"
 
@@ -125,8 +200,10 @@ msgid "Only super admins can create accounts."
 msgstr "केवल सुपर एडमिन ही खाते बना सकते हैं।"
 
 #: apps/management/views.py:551
-msgid "Could not create the account. Check for duplicate Employee ID or email."
-msgstr "खाता नहीं बनाया जा सका। कर्मचारी आईडी या ईमेल की दोहरी प्रविष्टि जाँचें।"
+msgid ""
+"Could not create the account. Check for duplicate Employee ID or email."
+msgstr ""
+"खाता नहीं बनाया जा सका। कर्मचारी आईडी या ईमेल की दोहरी प्रविष्टि जाँचें।"
 
 #: apps/users/badges.py:18
 msgid "First Steps"
@@ -177,8 +254,8 @@ msgid "Logged 3+ hours of active learning."
 msgstr "3 घंटे से अधिक सक्रिय अध्ययन दर्ज किया।"
 
 #: apps/users/forms.py:12 templates/analytics/hr_dashboard.html:145
-#: templates/certificates/my_certificates.html:60 templates/users/login.html:45
-#: templates/users/login.html:62
+#: templates/certificates/my_certificates.html:60
+#: templates/users/login.html:45 templates/users/login.html:62
 msgid "Employee ID"
 msgstr "कर्मचारी आईडी"
 
@@ -233,16 +310,18 @@ msgstr "पासवर्ड मेल नहीं खाते।"
 
 #: apps/users/models.py:9
 msgid ""
-"Employee ID must be 3-20 characters using only uppercase letters and numbers "
-"(e.g. EMP001, ADMIN001)."
+"Employee ID must be 3-20 characters using only uppercase letters and numbers"
+" (e.g. EMP001, ADMIN001)."
 msgstr ""
-"कर्मचारी आईडी 3-20 अक्षरों की होनी चाहिए और केवल बड़े अक्षर तथा अंकों से बनी हो (जैसे "
-"EMP001, ADMIN001)।"
+"कर्मचारी आईडी 3-20 अक्षरों की होनी चाहिए और केवल बड़े अक्षर तथा अंकों से बनी"
+" हो (जैसे EMP001, ADMIN001)।"
 
 #: apps/users/views.py:98
 msgid ""
 "Too many failed login attempts. Please wait a few minutes and try again."
-msgstr "बहुत अधिक असफल लॉगिन प्रयास। कृपया कुछ मिनट प्रतीक्षा करें और पुनः प्रयास करें।"
+msgstr ""
+"बहुत अधिक असफल लॉगिन प्रयास। कृपया कुछ मिनट प्रतीक्षा करें और पुनः प्रयास "
+"करें।"
 
 #: apps/users/views.py:123
 msgid "Invalid Employee ID or Password. Please try again."
@@ -257,8 +336,8 @@ msgid ""
 "Account created successfully. An admin must approve your account before you "
 "can sign in."
 msgstr ""
-"खाता सफलतापूर्वक बन गया। साइन इन करने से पहले एक प्रशासक को आपके खाते को अनुमोदित "
-"करना होगा।"
+"खाता सफलतापूर्वक बन गया। साइन इन करने से पहले एक प्रशासक को आपके खाते को "
+"अनुमोदित करना होगा।"
 
 #: apps/users/views.py:171
 msgid "Admin accounts cannot be approved via self-signup."
@@ -270,11 +349,14 @@ msgstr "केवल लंबित (निष्क्रिय) खाते 
 
 #: apps/users/views.py:216
 msgid "Too many password reset requests. Please wait and try again later."
-msgstr "बहुत अधिक पासवर्ड रीसेट अनुरोध। कृपया प्रतीक्षा करें और बाद में पुनः प्रयास करें।"
+msgstr ""
+"बहुत अधिक पासवर्ड रीसेट अनुरोध। कृपया प्रतीक्षा करें और बाद में पुनः प्रयास "
+"करें।"
 
 #: apps/users/views.py:230
 msgid "Too many reset attempts. Please wait and try again later."
-msgstr "बहुत अधिक रीसेट प्रयास। कृपया प्रतीक्षा करें और बाद में पुनः प्रयास करें।"
+msgstr ""
+"बहुत अधिक रीसेट प्रयास। कृपया प्रतीक्षा करें और बाद में पुनः प्रयास करें।"
 
 #: templates/analytics/hr_dashboard.html:3
 msgid "HR Analytics Dashboard | SRMS DRONA"
@@ -338,8 +420,9 @@ msgstr "कर्मचारी"
 msgid "Enrollments"
 msgstr "नामांकन"
 
-#: templates/analytics/hr_dashboard.html:78 templates/courses/dashboard.html:25
-#: templates/courses/dashboard.html:77 templates/courses/lesson.html:56
+#: templates/analytics/hr_dashboard.html:78
+#: templates/courses/dashboard.html:25 templates/courses/dashboard.html:77
+#: templates/courses/lesson.html:70
 #: templates/courses/manager_dashboard.html:43 templates/users/profile.html:83
 #: templates/users/profile.html:139
 msgid "Completed"
@@ -619,11 +702,11 @@ msgstr "कोई प्रमाणपत्र नहीं मिला। �
 
 #: templates/certificates/my_certificates.html:130
 msgid ""
-"You have no certificates yet. Complete a mandatory course and pass the final "
-"assessment."
+"You have no certificates yet. Complete a mandatory course and pass the final"
+" assessment."
 msgstr ""
-"आपके पास अभी कोई प्रमाणपत्र नहीं है। एक अनिवार्य पाठ्यक्रम पूरा करें और अंतिम परीक्षा "
-"उत्तीर्ण करें।"
+"आपके पास अभी कोई प्रमाणपत्र नहीं है। एक अनिवार्य पाठ्यक्रम पूरा करें और "
+"अंतिम परीक्षा उत्तीर्ण करें।"
 
 #: templates/certificates/verify.html:3
 msgid "Certificate Verification | SRMS DRONA"
@@ -634,7 +717,8 @@ msgid "Certificate Validated"
 msgstr "प्रमाणपत्र सत्यापित"
 
 #: templates/certificates/verify.html:11
-msgid "This certificate is valid and was issued by SRMS Group of Institutions."
+msgid ""
+"This certificate is valid and was issued by SRMS Group of Institutions."
 msgstr "यह प्रमाणपत्र वैध है और SRMS समूह संस्थान द्वारा जारी किया गया है।"
 
 #: templates/certificates/verify.html:16
@@ -650,8 +734,8 @@ msgid ""
 "The name is partially shown. The full name, Employee ID, and department "
 "appear on the certificate PDF itself."
 msgstr ""
-"नाम आंशिक रूप से दिखाया गया है। पूरा नाम, कर्मचारी आईडी और विभाग प्रमाणपत्र पीडीएफ "
-"पर अंकित हैं।"
+"नाम आंशिक रूप से दिखाया गया है। पूरा नाम, कर्मचारी आईडी और विभाग प्रमाणपत्र "
+"पीडीएफ पर अंकित हैं।"
 
 #: templates/certificates/verify.html:42
 msgid "Certificate Not Found"
@@ -700,7 +784,7 @@ msgstr "परीक्षा"
 msgid "Complete all lessons and then take the quiz."
 msgstr "पाठ्यक्रम समाप्त करें और फिर परीक्षा दें।"
 
-#: templates/courses/course_detail.html:99 templates/courses/lesson.html:71
+#: templates/courses/course_detail.html:99 templates/courses/lesson.html:85
 msgid "Take Quiz"
 msgstr "परीक्षा दें"
 
@@ -781,23 +865,36 @@ msgstr "मॉड्यूल"
 msgid "Lesson"
 msgstr "पाठ"
 
-#: templates/courses/lesson.html:33
+#: templates/courses/lesson.html:28
+msgid "Your browser cannot play this video format."
+msgstr "आपका ब्राउज़र इस वीडियो प्रारूप को नहीं चला सकता।"
+
+#: templates/courses/lesson.html:30
+msgid "Download video"
+msgstr "वीडियो डाउनलोड करें"
+
+#: templates/courses/lesson.html:34
+msgid "This lesson has no video attached yet. Ask your HOD to add one."
+msgstr "इस पाठ में अभी कोई वीडियो नहीं जोड़ा गया है। अपने HOD से कहें।"
+
+#: templates/courses/lesson.html:47
 msgid "No content available for this lesson yet."
 msgstr "इस पाठ के लिए कोई सामग्री उपलब्ध नहीं है।"
 
-#: templates/courses/lesson.html:42
+#: templates/courses/lesson.html:56
 msgid "Course Progress"
 msgstr "कोर्स प्रगति"
 
-#: templates/courses/lesson.html:49
+#: templates/courses/lesson.html:63
 msgid "Minutes"
 msgstr "मिनट"
 
-#: templates/courses/lesson.html:63
+#: templates/courses/lesson.html:77
 msgid "Previous"
 msgstr "पिछला"
 
-#: templates/courses/lesson.html:69 templates/courses/training_calendar.html:14
+#: templates/courses/lesson.html:83
+#: templates/courses/training_calendar.html:14
 msgid "Next"
 msgstr "अगला"
 
@@ -877,7 +974,8 @@ msgstr "अनुमोदन देखें"
 msgid "Recent Enrollments"
 msgstr "हाल के नामांकन"
 
-#: templates/courses/manager_dashboard.html:100 templates/users/profile.html:91
+#: templates/courses/manager_dashboard.html:100
+#: templates/users/profile.html:91
 msgid "No enrollments yet."
 msgstr "कोई नामांकन नहीं।"
 
@@ -968,8 +1066,8 @@ msgid ""
 "You don't have permission to view this page. If you believe this is a "
 "mistake, please contact your administrator."
 msgstr ""
-"आपको यह पृष्ठ देखने की अनुमति नहीं है। यदि आपको लगता है कि यह गलती है, तो कृपया अपने "
-"प्रशासक से संपर्क करें।"
+"आपको यह पृष्ठ देखने की अनुमति नहीं है। यदि आपको लगता है कि यह गलती है, तो "
+"कृपया अपने प्रशासक से संपर्क करें।"
 
 #: templates/errors/404.html:9
 msgid "Page Not Found | SRMS DRONA"
@@ -981,7 +1079,9 @@ msgstr "पृष्ठ नहीं मिला"
 
 #: templates/errors/404.html:18
 msgid "The page you're looking for doesn't exist or has been moved."
-msgstr "आप जिस पृष्ठ की तलाश कर रहे हैं वह मौजूद नहीं है या स्थानांतरित कर दिया गया है।"
+msgstr ""
+"आप जिस पृष्ठ की तलाश कर रहे हैं वह मौजूद नहीं है या स्थानांतरित कर दिया गया "
+"है।"
 
 #: templates/errors/500.html:9
 msgid "Server Error | SRMS DRONA"
@@ -1006,7 +1106,8 @@ msgstr "कर्मचारी को पाठ्यक्रम सौंप
 
 #: templates/management/assign_staff.html:7
 msgid "Enroll a specific employee into a course (per-student assignment)."
-msgstr "किसी विशेष कर्मचारी को पाठ्यक्रम में नामांकित करें (व्यक्तिगत सौंपवटी)।"
+msgstr ""
+"किसी विशेष कर्मचारी को पाठ्यक्रम में नामांकित करें (व्यक्तिगत सौंपवटी)।"
 
 #: templates/management/assign_staff.html:21
 msgid "Assign"
@@ -1035,7 +1136,9 @@ msgstr "सामूहिक नामांकन"
 msgid ""
 "Assign a course to all active staff in a department (or everyone) in one "
 "step."
-msgstr "किसी विभाग के सभी सक्रिय कर्मचारियों (या सभी) को एक ही चरण में पाठ्यक्रम सौंपें।"
+msgstr ""
+"किसी विभाग के सभी सक्रिय कर्मचारियों (या सभी) को एक ही चरण में पाठ्यक्रम "
+"सौंपें।"
 
 #: templates/management/bulk_enroll.html:21
 #: templates/management/course_detail.html:11
@@ -1050,7 +1153,8 @@ msgstr "प्रबंधन कंसोल | SRMS DRONA"
 msgid ""
 "Create courses, upload modules &amp; lessons, and assign training to "
 "departments."
-msgstr "पाठ्यक्रम बनाएँ, मॉड्यूल और पाठ अपलोड करें, तथा विभागों को प्रशिक्षण सौंपें।"
+msgstr ""
+"पाठ्यक्रम बनाएँ, मॉड्यूल और पाठ अपलोड करें, तथा विभागों को प्रशिक्षण सौंपें।"
 
 #: templates/management/console_home.html:16
 #: templates/management/course_list.html:22
@@ -1105,7 +1209,8 @@ msgstr "इस मॉड्यूल में अभी कोई पाठ न
 
 #: templates/management/course_detail.html:70
 msgid "This course has no modules yet. Add your first module below."
-msgstr "इस पाठ्यक्रम में अभी कोई मॉड्यूल नहीं है। नीचे अपना पहला मॉड्यूल जोड़ें।"
+msgstr ""
+"इस पाठ्यक्रम में अभी कोई मॉड्यूल नहीं है। नीचे अपना पहला मॉड्यूल जोड़ें।"
 
 #: templates/management/course_detail.html:73
 msgid "Add a Module"
@@ -1125,7 +1230,8 @@ msgstr "पाठ्यक्रम प्रबंधित करें | SRMS
 
 #: templates/management/course_list.html:7
 msgid "Edit course structure, add modules and lessons, and track enrollments."
-msgstr "पाठ्यक्रम संरचना संपादित करें, मॉड्यूल और पाठ जोड़ें, तथा नामांकन देखें।"
+msgstr ""
+"पाठ्यक्रम संरचना संपादित करें, मॉड्यूल और पाठ जोड़ें, तथा नामांकन देखें।"
 
 #: templates/management/course_list.html:10
 msgid "New Course"
@@ -1135,10 +1241,6 @@ msgstr "नया पाठ्यक्रम"
 #: templates/management/session_list.html:11
 msgid "Back"
 msgstr "वापस"
-
-#: templates/management/course_list.html:20
-msgid "Category"
-msgstr "श्रेणी"
 
 #: templates/management/course_list.html:48
 msgid "Open"
@@ -1191,7 +1293,8 @@ msgstr "प्रशिक्षण सत्र | SRMS DRONA"
 
 #: templates/management/session_list.html:7
 msgid "Schedule workshops, drills, and live training for staff."
-msgstr "कर्मचारियों के लिए कार्यशालाएँ, अभ्यास और लाइव प्रशिक्षण निर्धारित करें।"
+msgstr ""
+"कर्मचारियों के लिए कार्यशालाएँ, अभ्यास और लाइव प्रशिक्षण निर्धारित करें।"
 
 #: templates/management/session_list.html:22
 msgid "Linked Course"
@@ -1214,8 +1317,8 @@ msgid ""
 "Upload a CSV to create staff accounts in one step. Imported staff get an "
 "initial password equal to their Employee ID."
 msgstr ""
-"एक ही चरण में कर्मचारी खाते बनाने के लिए CSV अपलोड करें। आयातित कर्मचारियों का प्रारंभिक "
-"पासवर्ड उनकी कर्मचारी आईडी के बराबर होगा।"
+"एक ही चरण में कर्मचारी खाते बनाने के लिए CSV अपलोड करें। आयातित कर्मचारियों "
+"का प्रारंभिक पासवर्ड उनकी कर्मचारी आईडी के बराबर होगा।"
 
 #: templates/management/staff_import.html:13
 msgid "CSV File"
@@ -1246,8 +1349,8 @@ msgid ""
 "Provision a new account manually. The new user can then manage training and "
 "approve signup requests."
 msgstr ""
-"नया खाता स्वतः बनाएँ। नया उपयोगकर्ता फिर प्रशिक्षण प्रबंधित कर सकेगा और पंजीकरण अनुरोध "
-"स्वीकृत कर सकेगा।"
+"नया खाता स्वतः बनाएँ। नया उपयोगकर्ता फिर प्रशिक्षण प्रबंधित कर सकेगा और "
+"पंजीकरण अनुरोध स्वीकृत कर सकेगा।"
 
 #: templates/quizzes/ai_quiz_generator.html:3
 msgid "Quiz Builder | SRMS DRONA"
@@ -1324,8 +1427,8 @@ msgid ""
 "You need at least %(quiz.passing_score)s%% to pass. Please review the SOP "
 "and retry."
 msgstr ""
-"उत्तीर्ण होने के लिए आपको कम से कम %(quiz.passing_score)s%% अंक चाहिए। कृपया SOP "
-"दोबारा पढ़ें और पुनः प्रयास करें।"
+"उत्तीर्ण होने के लिए आपको कम से कम %(quiz.passing_score)s%% अंक चाहिए। कृपया"
+" SOP दोबारा पढ़ें और पुनः प्रयास करें।"
 
 #: templates/quizzes/quiz_result.html:36
 msgid "Retry Quiz"
@@ -1443,11 +1546,11 @@ msgstr "अपना ईमेल देखें"
 
 #: templates/users/password_reset_done.html:20
 msgid ""
-"If an account exists for that email, we've sent a password reset link. Check "
-"your inbox (and spam)."
+"If an account exists for that email, we've sent a password reset link. Check"
+" your inbox (and spam)."
 msgstr ""
-"यदि उस ईमेल से कोई खाता मौजूद है, तो हमने पासवर्ड रीसेट लिंक भेजा है। अपना इनबॉक्स (और "
-"स्पैम) देखें।"
+"यदि उस ईमेल से कोई खाता मौजूद है, तो हमने पासवर्ड रीसेट लिंक भेजा है। अपना "
+"इनबॉक्स (और स्पैम) देखें।"
 
 #: templates/users/password_reset_form.html:8
 msgid "Reset Password | SRMS DRONA"
@@ -1550,8 +1653,8 @@ msgid ""
 "Register to join the SRMS DRONA Learning Platform. Your account must be "
 "approved by an admin before you can sign in."
 msgstr ""
-"SRMS DRONA लर्निंग प्लेटफ़ॉर्म में शामिल होने के लिए पंजीकरण करें। साइन इन करने से पहले एक "
-"प्रशासक को आपके खाते को अनुमोदित करना होगा।"
+"SRMS DRONA लर्निंग प्लेटफ़ॉर्म में शामिल होने के लिए पंजीकरण करें। साइन इन "
+"करने से पहले एक प्रशासक को आपके खाते को अनुमोदित करना होगा।"
 
 #: templates/users/register.html:60
 msgid "Already have an account?"
@@ -1560,6 +1663,3 @@ msgstr "पहले से खाता है?"
 #: templates/users/register.html:60
 msgid "Sign in"
 msgstr "साइन इन करें"
-
-#~ msgid "Create HR/HOD Account"
-#~ msgstr "एचआर/अध्यक्ष खाता बनाएँ"

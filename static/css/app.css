@@ -946,6 +946,30 @@ code {
   box-shadow: var(--shadow-md);
 }
 
+/* YouTube / Vimeo embeds need a 16:9 box or they letterbox badly. */
+.video-frame {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  height: auto;
+  border: 0;
+}
+
+.video-fallback {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.video-fallback a {
+  color: #cfe0ff;
+  background: rgba(12, 18, 32, 0.75);
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--r-sm);
+}
+
 video {
   width: 100%;
   display: block;
