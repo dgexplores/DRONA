@@ -267,9 +267,10 @@ Open **http://127.0.0.1:8000/** in your browser.
 | HOD / Trainer | `EMP010` | `drona123` |
 | Staff | `EMP001`–`EMP006` | `drona123` |
 
-Seed password values come from `SEED_ADMIN_PASSWORD` (env, default `Admin12345`) and `drona123`
-for staff. Override `SEED_ADMIN_PASSWORD` for your own seed. The live deployment uses a rotated
-admin password from `DJANGO_ADMIN_PASSWORD` (see Production below) — never reuse the seed admin
+There is exactly **one** env var for the admin password: `DJANGO_ADMIN_PASSWORD`
+(default `Admin12345`). `seed.py` and the `set_admin_password` command both read it, so a local
+seed and a deployed service can never disagree — whichever runs last wins by design. Staff
+passwords are hardcoded `drona123` in the seed.
 password in production.
 
 ---

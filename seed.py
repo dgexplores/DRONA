@@ -3,7 +3,10 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'srms_dorna.settings')
 django.setup()
 
-SEED_ADMIN_PASSWORD = os.environ.get('SEED_ADMIN_PASSWORD', 'Admin12345')
+# Same env var the deployed service uses: set_admin_password (run by `boot` on
+# every start) reads DJANGO_ADMIN_PASSWORD. Reading one var in one place keeps a
+# local seed and a deployed service from disagreeing about the admin password.
+SEED_ADMIN_PASSWORD = os.environ.get('DJANGO_ADMIN_PASSWORD', 'Admin12345')
 
 from apps.users.models import StaffUser, Department
 from apps.courses.models import Category, Course, Module, Lesson, Enrollment, LessonProgress
@@ -26,7 +29,8 @@ def create_departments():
     return created
 
 def create_super_admin():
-    if not StaffUser.objects.filter(employee_id='ADMIN001').exists():
+    admin = StaffUser.objects.filter(employee_id='ADMIN001').first()
+    if admin is None:
         admin = StaffUser.objects.create_superuser(
             employee_id='ADMIN001',
             username='admin',
@@ -38,7 +42,11 @@ def create_super_admin():
             designation='System Administrator'
         )
         print(f"Super Admin created: ADMIN001 / {SEED_ADMIN_PASSWORD}")
-    return StaffUser.objects.get(employee_id='ADMIN001')
+    else:
+        admin.set_password(SEED_ADMIN_PASSWORD)
+        admin.save(update_fields=['password'])
+        print(f"Super Admin password re-synced: ADMIN001 / {SEED_ADMIN_PASSWORD}")
+    return admin
 
 def create_staff(dept):
     staff_data = [

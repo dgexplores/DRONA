@@ -429,26 +429,22 @@ The context limit is a real constraint. The strategy that keeps this project saf
 14. ✅ ~~Tailor README + HANDOFF to current state~~ — **done**, then re-synced in session 6.
 
 
-## ⚠️ Known issue: documented admin password does not work on production
+## Admin password: one env var, two writers (resolved 2026-09-26)
 
-Found 2026-09-26 while verifying the Hindi deploy. **Unrelated to i18n — pre-existing.**
+**This is not a bug in the deploy and was never a broken seed** — corrected here after a
+misdiagnosis. `ADMIN001`'s production password is `DJANGO_ADMIN_PASSWORD`, rotated on every
+boot by `set_admin_password` (called from `boot`). That is the intended mechanism, and it
+predates the i18n work.
 
-- `ADMIN001 / Admin12345` (documented in README) returns *"Invalid Employee ID or Password"*.
-  `EMP001 / drona123` works fine.
-- Cause: `create_super_admin()` in `seed.py` is **skip-if-exists** —
-  `if not StaffUser.objects.filter(employee_id='ADMIN001').exists():` — so the password is
-  written **only on first creation**. Once the row exists, re-running the seed (with a
-  different `SEED_ADMIN_PASSWORD`) never updates it. The live DB's admin was created under a
-  different value, so the documented credential has been wrong ever since.
-- `create_staff()` has the same skip-if-exists shape but hardcodes `password='drona123'`, which
-  is why staff logins are unaffected and only the admin drifted.
+The real defect was narrower: `seed.py` read a **second, different** var,
+`SEED_ADMIN_PASSWORD`, for the same field. Two writers, two names, so the deployed password
+depended on which ran last. Fixed by pointing `seed.py` at `DJANGO_ADMIN_PASSWORD` and making
+`create_super_admin()` re-sync the password when the row already exists (it previously
+returned early, so a password change never propagated on a re-seed).
 
-Fixing this means writing to production data or re-running a seed that **updates** existing
-rows. Do not do that implicitly — pick one:
+`AdminPasswordSyncTests` now fails if the two ever read different vars again.
 
-1. set `SEED_ADMIN_PASSWORD` on the service to the documented value and change the seed to
-   `set_password` when the user already exists, or
-2. reset the row via a Django shell / one-off admin action.
-
-Until then, use `EMP001 / drona123` (staff) to demo, and reach the management console by
-promoting a staff account from the admin UI rather than by the admin login.
+Note the deliberate asymmetry: the admin password is env-driven and re-synced on every
+deploy, while staff passwords are not — re-seeding will not clobber a password a staff member
+changed through the UI. In test mode `DJANGO_ADMIN_PASSWORD` is set to the documented
+`Admin12345`; **rotate it before this is anything but a test deployment.**

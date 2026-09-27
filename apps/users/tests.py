@@ -1,4 +1,7 @@
 import os
+from unittest import mock
+
+from django.core.management import call_command
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
@@ -383,3 +386,43 @@ class HindiCatalogTests(TestCase):
         self.assertContains(resp, 'पाठ्यक्रम')
         u.refresh_from_db()
         self.assertEqual(u.preferred_language, 'hi')
+
+
+class AdminPasswordSyncTests(TestCase):
+    """`seed.py` and `set_admin_password` must never disagree about the admin password.
+
+    They are two writers of the same field. `boot` calls set_admin_password on every
+    start, so if the seed used a different env var the deployed password would
+    silently be whichever ran last.
+    """
+
+    def _admin(self):
+        return StaffUser.objects.create_superuser(
+            employee_id='ADMIN001', username='admin', email='admin@srms.ac.in',
+            first_name='Super', last_name='Admin', password='placeholder-old',
+        )
+
+    def test_set_admin_password_rotates_from_env(self):
+        self._admin()
+        with mock.patch.dict(os.environ, {'DJANGO_ADMIN_PASSWORD': 'FromEnv123'}):
+            call_command('set_admin_password')
+        u = StaffUser.objects.get(employee_id='ADMIN001')
+        self.assertTrue(u.check_password('FromEnv123'))
+
+    def test_seed_and_command_read_the_same_env_var(self):
+        import importlib
+        with mock.patch.dict(os.environ, {'DJANGO_ADMIN_PASSWORD': 'Shared123'}):
+            importlib.reload(importlib.import_module('seed'))
+            importlib.reload(importlib.import_module('seed'))
+        self.assertEqual(importlib.import_module('seed').SEED_ADMIN_PASSWORD, 'Shared123')
+
+    def test_seed_resyncs_an_existing_admin(self):
+        self._admin()
+        u = StaffUser.objects.get(employee_id='ADMIN001')
+        u.set_password('something-else')
+        u.save()
+        import importlib
+        seed = importlib.import_module('seed')
+        seed.create_super_admin()
+        u.refresh_from_db()
+        self.assertTrue(u.check_password(seed.SEED_ADMIN_PASSWORD))
