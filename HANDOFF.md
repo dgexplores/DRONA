@@ -448,3 +448,36 @@ Note the deliberate asymmetry: the admin password is env-driven and re-synced on
 deploy, while staff passwords are not — re-seeding will not clobber a password a staff member
 changed through the UI. In test mode `DJANGO_ADMIN_PASSWORD` is set to the documented
 `Admin12345`; **rotate it before this is anything but a test deployment.**
+
+
+## Verified live: bilingual admin console (2026-09-27)
+
+Deploy `dep-dasdas17lnhs738n3g1g`. Logged in as `ADMIN001` on production and swept
+**17 routes in both `en` and `hi`** — dashboard, profile, certificates, training calendar,
+HR analytics, the whole management console (courses list/create/detail/edit, enroll,
+assign, sessions list/create, staff import, create user) and the AI quiz generator.
+All render with `html lang` and Devanagari content matching the selected language;
+English pages carry ~0 Devanagari, Hindi pages ~230–650.
+
+`/manage/users/create/` returning a form that contains an `employee_id` input will fool a
+naive "did we land on login?" check — it is authenticated, HTTP 200, and correctly
+bilingual (`Create Account` / `खाता बनाएँ`).
+
+### ⚠️ ACTION REQUIRED — production admin password is now a published constant
+
+`DJANGO_ADMIN_PASSWORD` on the service was set to `Admin12345` to match the README, so the
+documented demo credential works. **This repository is public and that exact value is
+printed in the README**, so anyone can now sign in to the live admin console with it.
+
+This is fine for a throwaway test instance and unsafe for anything else. Before this
+instance holds real data, set a strong unique value:
+
+    render services update is not needed - set it in Dashboard -> DRONAv2 -> Environment,
+    or: PUT /v1/services/srv-dajkh37qj5pc73e038i0/env-vars with the new value
+
+`set_admin_password` runs on every boot, so saving the var plus a deploy is enough.
+
+Note the operational lesson: an env-var change is applied by a **deploy**, not by
+`restart`. A restart ran `boot` and logged "ADMIN001 password rotated." while still using
+the previous value - the log line proves `set_admin_password` ran, not which value it read.
+Verify a rotation by checking the login, not the log.
