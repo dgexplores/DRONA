@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.users.models import StaffUser, Department
 from apps.courses.models import Category, Course, Module, Lesson, Enrollment, TrainingSession
+from apps.courses.storage import MAX_UPLOAD_BYTES
 
 
 def apply_labels(form, labels):
@@ -147,17 +148,36 @@ class LessonForm(forms.ModelForm):
             "YouTube and Vimeo links play in an embedded player."
         )
         self.fields['sop_text'].help_text = _("Used to generate AI quiz questions from this SOP.")
+        self.fields['pdf_file'].help_text = _(
+            "Stored in the database, so it survives a redeploy. Max {limit} MB, PDF only."
+        ).format(limit=MAX_UPLOAD_BYTES // (1024 * 1024))
+
+    def clean_pdf_file(self):
+        pdf = self.cleaned_data.get('pdf_file')
+        if not pdf:
+            return pdf
+        name = (getattr(pdf, 'name', '') or '').lower()
+        if name and not name.endswith('.pdf'):
+            raise forms.ValidationError(_("Only PDF files can be uploaded here."))
+        size = getattr(pdf, 'size', None)
+        if size is not None and size > MAX_UPLOAD_BYTES:
+            raise forms.ValidationError(
+                _("That file is too large. Maximum size is {limit} MB.").format(
+                    limit=MAX_UPLOAD_BYTES // (1024 * 1024))
+            )
+        if size == 0:
+            raise forms.ValidationError(_("The uploaded file is empty."))
+        return pdf
 
     def clean(self):
         cleaned = super().clean()
         lesson_type = cleaned.get('lesson_type')
         video_url = cleaned.get('video_url', '')
-        pdf_file = cleaned.get('pdf_file')
         sop_text = cleaned.get('sop_text', '')
         existing_pdf = getattr(self.instance, 'pdf_file', None)
         if lesson_type == 'video' and not video_url:
             self.add_error('video_url', _("A video link is required for video lessons."))
-        if lesson_type == 'pdf' and not (pdf_file or sop_text or existing_pdf):
+        if lesson_type == 'pdf' and not (self.cleaned_data.get('pdf_file') or sop_text or existing_pdf):
             self.add_error('pdf_file', _("Upload a PDF or paste the SOP text for SOP PDF lessons."))
         return cleaned
 

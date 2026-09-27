@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from apps.users.models import Department
+from apps.courses.storage import DatabaseUploadStorage
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
@@ -53,7 +54,8 @@ class Lesson(models.Model):
     title_hi = models.CharField(max_length=200, blank=True)
     lesson_type = models.CharField(max_length=10, choices=LESSON_TYPES, default='video')
     video_url = models.CharField(max_length=500, blank=True)
-    pdf_file = models.FileField(upload_to='sop_documents/', blank=True, null=True)
+    pdf_file = models.FileField(upload_to='sop_documents/', blank=True, null=True,
+                                storage=DatabaseUploadStorage())
     sop_text = models.TextField(blank=True, help_text="Extracted text from SOP manual for AI processing")
     duration_minutes = models.PositiveIntegerField(default=10)
     order = models.PositiveIntegerField(default=1)
@@ -63,6 +65,26 @@ class Lesson(models.Model):
 
     def __str__(self):
         return f"{self.module.title} - Lesson {self.order}: {self.title}"
+
+class StoredUpload(models.Model):
+    """The bytes of an uploaded file, kept in the database.
+
+    See `apps.courses.storage` for why uploads are not on the filesystem.
+    """
+
+    name = models.CharField(max_length=255, unique=True)
+    content = models.BinaryField()
+    content_type = models.CharField(max_length=120, default="application/pdf")
+    size = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "stored upload"
+        verbose_name_plural = "stored uploads"
+
 
 class Enrollment(models.Model):
     staff_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='enrollments')

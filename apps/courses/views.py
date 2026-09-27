@@ -9,9 +9,11 @@ from django.db import transaction
 from django.db.models import F
 import json
 import logging
+import os
 from datetime import datetime as dt, timedelta as td
 
-from apps.courses.models import Course, Category, Module, Lesson, Enrollment, LessonProgress, TrainingSession
+from apps.courses.models import (Course, Category, Module, Lesson, Enrollment, LessonProgress,
+                               TrainingSession, StoredUpload)
 from apps.courses.video import resolve_video
 from apps.users.models import Department, StaffUser
 from apps.certificates.models import Certificate
@@ -213,9 +215,15 @@ def sop_document_view(request, lesson_id):
     if not lesson.pdf_file:
         raise Http404("No SOP document for this lesson.")
     try:
-        return FileResponse(lesson.pdf_file.open('rb'), content_type='application/pdf')
-    except FileNotFoundError:
+        handle = lesson.pdf_file.open('rb')
+    except (FileNotFoundError, OSError, StoredUpload.DoesNotExist):
+        # The filesystem backend raised FileNotFoundError; the database backend
+        # raises DoesNotExist. Both mean "the bytes are gone".
         raise Http404("SOP file not found.")
+    response = FileResponse(handle, content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="{os.path.basename(lesson.pdf_file.name)}"'
+    response['Content-Length'] = lesson.pdf_file.size
+    return response
 
 
 @login_required

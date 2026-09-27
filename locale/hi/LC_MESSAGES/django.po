@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-27 18:37+0530\n"
+"POT-Creation-Date: 2026-09-27 22:04+0530\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,98 +22,98 @@ msgstr ""
 msgid "Access restricted to HODs and HR Administrators."
 msgstr "पहुँच केवल विभागाध्यक्षों और एचआर प्रशासकों के लिए सीमित है।"
 
-#: apps/management/forms.py:27
+#: apps/management/forms.py:28
 msgid "Temporary password. Leave blank to auto-generate a random one."
 msgstr ""
 "अस्थायी पासवर्ड। खाली छोड़ने पर एक यादृच्छिक पासवर्ड अपने आप बन जाएगा।"
 
-#: apps/management/forms.py:46
+#: apps/management/forms.py:47
 msgid "No department"
 msgstr "कोई विभाग नहीं"
 
-#: apps/management/forms.py:47
+#: apps/management/forms.py:48
 msgid "Uppercase letters/numbers only (e.g. HR001)."
 msgstr "केवल बड़े अक्षर और अंक (जैसे HR001)।"
 
-#: apps/management/forms.py:53
+#: apps/management/forms.py:54
 msgid "An account with this Employee ID already exists."
 msgstr "इस कर्मचारी आईडी वाला खाता पहले से मौजूद है।"
 
-#: apps/management/forms.py:59
+#: apps/management/forms.py:60
 msgid "An account with this email already exists."
 msgstr "इस ईमेल वाला खाता पहले से मौजूद है।"
 
-#: apps/management/forms.py:84 apps/management/forms.py:110
-#: apps/management/forms.py:134
+#: apps/management/forms.py:85 apps/management/forms.py:111
+#: apps/management/forms.py:135
 msgid "Title"
 msgstr "शीर्षक"
 
-#: apps/management/forms.py:85 apps/management/forms.py:111
-#: apps/management/forms.py:135
+#: apps/management/forms.py:86 apps/management/forms.py:112
+#: apps/management/forms.py:136
 msgid "Title (Hindi)"
 msgstr "शीर्षक (हिन्दी)"
 
-#: apps/management/forms.py:86
+#: apps/management/forms.py:87
 msgid "Description"
 msgstr "विवरण"
 
-#: apps/management/forms.py:87
+#: apps/management/forms.py:88
 msgid "Description (Hindi)"
 msgstr "विवरण (हिन्दी)"
 
-#: apps/management/forms.py:88 templates/management/course_list.html:20
+#: apps/management/forms.py:89 templates/management/course_list.html:20
 msgid "Category"
 msgstr "श्रेणी"
 
-#: apps/management/forms.py:89
+#: apps/management/forms.py:90
 msgid "Mandatory for all staff"
 msgstr "सभी कर्मचारियों के लिए अनिवार्य"
 
-#: apps/management/forms.py:90
+#: apps/management/forms.py:91
 msgid "Restrict to departments"
 msgstr "विभागों तक सीमित करें"
 
-#: apps/management/forms.py:92
+#: apps/management/forms.py:93
 msgid "Select category"
 msgstr "श्रेणी चुनें"
 
-#: apps/management/forms.py:94
+#: apps/management/forms.py:95
 msgid "Leave empty to make this course available to all departments."
 msgstr "इसे खाली छोड़ें ताकि यह पाठ्यक्रम सभी विभागों के लिए उपलब्ध हो।"
 
-#: apps/management/forms.py:112 apps/management/forms.py:141
+#: apps/management/forms.py:113 apps/management/forms.py:142
 msgid "Order"
 msgstr "क्रम"
 
-#: apps/management/forms.py:136
+#: apps/management/forms.py:137
 msgid "Lesson type"
 msgstr "पाठ का प्रकार"
 
-#: apps/management/forms.py:137
+#: apps/management/forms.py:138
 msgid "Video link"
 msgstr "वीडियो लिंक"
 
-#: apps/management/forms.py:138
+#: apps/management/forms.py:139
 msgid "SOP PDF"
 msgstr "SOP पीडीएफ"
 
-#: apps/management/forms.py:139
+#: apps/management/forms.py:140
 msgid "SOP text"
 msgstr "SOP पाठ"
 
-#: apps/management/forms.py:140
+#: apps/management/forms.py:141
 msgid "Duration (minutes)"
 msgstr "अवधि (मिनट)"
 
-#: apps/management/forms.py:143
+#: apps/management/forms.py:144
 msgid "Select lesson type"
 msgstr "पाठ का प्रकार चुनें"
 
-#: apps/management/forms.py:144
+#: apps/management/forms.py:145
 msgid "Leave blank to fall back to the English title."
 msgstr "खाली छोड़ने पर अंग्रेज़ी शीर्षक दिखाया जाएगा।"
 
-#: apps/management/forms.py:146
+#: apps/management/forms.py:147
 msgid ""
 "YouTube, Vimeo, or a direct link to an .mp4 / .webm / .m3u8 file. YouTube "
 "and Vimeo links play in an embedded player."
@@ -121,19 +121,40 @@ msgstr ""
 "YouTube, Vimeo, या .mp4 / .webm / .m3u8 फ़ाइल का सीधा लिंक। YouTube और Vimeo"
 " लिंक एम्बेडेड प्लेयर में चलते हैं।"
 
-#: apps/management/forms.py:149
+#: apps/management/forms.py:150
 msgid "Used to generate AI quiz questions from this SOP."
 msgstr "इस SOP से AI क्विज़ के प्रश्न बनाने के लिए उपयोग होता है।"
 
-#: apps/management/forms.py:159
+#: apps/management/forms.py:152
+#, python-brace-format
+msgid ""
+"Stored in the database, so it survives a redeploy. Max {limit} MB, PDF only."
+msgstr ""
+"डेटाबेस में सुरक्षित, इसलिए रीडिप्लॉय के बाद भी बना रहता है। अधिकतम {limit} "
+"MB, केवल PDF।"
+
+#: apps/management/forms.py:161
+msgid "Only PDF files can be uploaded here."
+msgstr "यहाँ केवल PDF फ़ाइलें अपलोड की जा सकती हैं।"
+
+#: apps/management/forms.py:165
+#, python-brace-format
+msgid "That file is too large. Maximum size is {limit} MB."
+msgstr "यह फ़ाइल बहुत बड़ी है। अधिकतम आकार {limit} MB है।"
+
+#: apps/management/forms.py:169
+msgid "The uploaded file is empty."
+msgstr "अपलोड की गई फ़ाइल खाली है।"
+
+#: apps/management/forms.py:179
 msgid "A video link is required for video lessons."
 msgstr "वीडियो पाठ के लिए वीडियो लिंक आवश्यक है।"
 
-#: apps/management/forms.py:161
+#: apps/management/forms.py:181
 msgid "Upload a PDF or paste the SOP text for SOP PDF lessons."
 msgstr "SOP PDF पाठ के लिए PDF अपलोड करें या SOP पाठ चिपकाएँ।"
 
-#: apps/management/forms.py:168 apps/management/forms.py:188
+#: apps/management/forms.py:188 apps/management/forms.py:208
 #: templates/certificates/my_certificates.html:29
 #: templates/certificates/my_certificates.html:63
 #: templates/courses/manager_dashboard.html:88
@@ -142,7 +163,7 @@ msgstr "SOP PDF पाठ के लिए PDF अपलोड करें य�
 msgid "Course"
 msgstr "पाठ्यक्रम"
 
-#: apps/management/forms.py:173 apps/users/forms.py:37
+#: apps/management/forms.py:193 apps/users/forms.py:37
 #: templates/analytics/hr_dashboard.html:75
 #: templates/analytics/hr_dashboard.html:147
 #: templates/certificates/my_certificates.html:20
@@ -150,20 +171,20 @@ msgstr "पाठ्यक्रम"
 msgid "Department"
 msgstr "विभाग"
 
-#: apps/management/forms.py:175
+#: apps/management/forms.py:195
 msgid "All departments (all active staff)"
 msgstr "सभी विभाग (सभी सक्रिय कर्मचारी)"
 
-#: apps/management/forms.py:183 templates/analytics/hr_dashboard.html:110
+#: apps/management/forms.py:203 templates/analytics/hr_dashboard.html:110
 #: templates/courses/manager_dashboard.html:87
 msgid "Employee"
 msgstr "कर्मचारी"
 
-#: apps/management/forms.py:195
+#: apps/management/forms.py:215
 msgid "Choose ..."
 msgstr "चुनें ..."
 
-#: apps/management/forms.py:215
+#: apps/management/forms.py:235
 msgid "No linked course (optional)"
 msgstr "कोई संबद्ध पाठ्यक्रम नहीं (वैकल्पिक)"
 

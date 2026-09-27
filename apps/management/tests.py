@@ -386,16 +386,26 @@ class DeleteRemovesUploadedFilesTests(TestCase):
         )
 
     def _path(self, lesson):
-        return lesson.pdf_file.path
+        """The stored name, plus an existence check that works on any backend.
+
+        Uploads no longer live on the filesystem (no persistent disk on this
+        plan), so `FieldFile.path` and os.path.exists would both be wrong here.
+        """
+        return lesson.pdf_file.name
+
+    def _stored(self, lesson_or_name):
+        name = getattr(lesson_or_name, 'pdf_file', lesson_or_name)
+        name = getattr(name, 'name', name)
+        return Lesson._meta.get_field('pdf_file').storage.exists(name)
 
     def test_lesson_delete_removes_its_pdf(self):
         course = Course.objects.create(title="C1", description="d", category=self.category)
         lesson = self._lesson_with_pdf(course)
         path = self._path(lesson)
-        self.assertTrue(os.path.exists(path))
+        self.assertTrue(self._stored(path))
         self.client.post(reverse('mgmt_lesson_delete', args=[lesson.id]))
         self.assertFalse(Lesson.objects.filter(pk=lesson.pk).exists())
-        self.assertFalse(os.path.exists(path), "file orphaned after lesson delete")
+        self.assertFalse(self._stored(path), "file orphaned after lesson delete")
 
     def test_module_delete_removes_child_pdfs(self):
         course = Course.objects.create(title="C2", description="d", category=self.category)
@@ -405,20 +415,20 @@ class DeleteRemovesUploadedFilesTests(TestCase):
         self.client.post(reverse('mgmt_module_delete', args=[module_id]))
         self.assertFalse(Module.objects.filter(pk=module_id).exists())
         self.assertFalse(Lesson.objects.filter(pk=lesson.pk).exists())
-        self.assertFalse(os.path.exists(path), "file orphaned after module delete")
+        self.assertFalse(self._stored(path), "file orphaned after module delete")
 
     def test_course_delete_removes_all_pdfs(self):
         course = Course.objects.create(title="C3", description="d", category=self.category)
         a = self._lesson_with_pdf(course, "A")
         b = self._lesson_with_pdf(course, "B")
         pa, pb = self._path(a), self._path(b)
-        self.assertTrue(os.path.exists(pa) and os.path.exists(pb))
+        self.assertTrue(self._stored(pa) and self._stored(pb))
         self.client.post(reverse('mgmt_course_delete', args=[course.id]))
         self.assertFalse(Course.objects.filter(pk=course.pk).exists())
         self.assertFalse(Module.objects.filter(course=course).exists())
         self.assertFalse(Lesson.objects.filter(pk__in=[a.pk, b.pk]).exists())
-        self.assertFalse(os.path.exists(pa), "file A orphaned after course delete")
-        self.assertFalse(os.path.exists(pb), "file B orphaned after course delete")
+        self.assertFalse(self._stored(pa), "file A orphaned after course delete")
+        self.assertFalse(self._stored(pb), "file B orphaned after course delete")
 
     def test_replacing_pdf_removes_the_old_file(self):
         course = Course.objects.create(title="C4", description="d", category=self.category)
@@ -431,14 +441,15 @@ class DeleteRemovesUploadedFilesTests(TestCase):
         })
         lesson.refresh_from_db()
         self.assertNotEqual(lesson.pdf_file.name, "sop.pdf")
-        self.assertFalse(os.path.exists(old_path), "old file orphaned after replace")
-        self.assertTrue(os.path.exists(lesson.pdf_file.path), "new file missing")
+        self.assertFalse(self._stored(old_path), "old file orphaned after replace")
+        self.assertTrue(self._stored(lesson), "new file missing")
 
     def test_delete_does_not_error_when_file_already_gone(self):
         """A missing file must not turn a successful delete into a 500."""
         course = Course.objects.create(title="C5", description="d", category=self.category)
         lesson = self._lesson_with_pdf(course)
-        os.remove(self._path(lesson))
+        # Remove the bytes behind the row, leaving the dangling reference.
+        Lesson._meta.get_field('pdf_file').storage.delete(lesson.pdf_file.name)
         resp = self.client.post(reverse('mgmt_lesson_delete', args=[lesson.id]))
         self.assertEqual(resp.status_code, 302)
         self.assertFalse(Lesson.objects.filter(pk=lesson.pk).exists())

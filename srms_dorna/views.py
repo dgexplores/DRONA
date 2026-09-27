@@ -63,4 +63,26 @@ def protected_media(request, path):
         ).exists():
             raise Http404("Not found.")
 
+    # Uploads are stored in the database (no persistent disk on this plan), so
+    # serve them from there first. The filesystem remains a fallback for
+    # anything genuinely written to MEDIA_ROOT.
+    stored = _serve_stored_upload(request, normalised)
+    if stored is not None:
+        return stored
+
     return static_serve(request, normalised, document_root=settings.MEDIA_ROOT)
+
+
+def _serve_stored_upload(request, path):
+    """Serve a database-stored upload, or return None if it is not one."""
+    from django.http import FileResponse
+    from apps.courses.models import StoredUpload
+
+    row = StoredUpload.objects.filter(name=path).first()
+    if row is None:
+        return None
+    from django.core.files.base import ContentFile
+    response = FileResponse(ContentFile(bytes(row.content), name=row.name),
+                            content_type=row.content_type or 'application/pdf')
+    response['Content-Length'] = row.size
+    return response
