@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-27 16:35+0530\n"
+"POT-Creation-Date: 2026-09-27 17:07+0530\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,9 +17,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
 #: apps/analytics/views.py:17
 msgid "Access restricted to HODs and HR Administrators."
-msgstr ""
+msgstr "पहुँच केवल विभागाध्यक्षों और एचआर प्रशासकों के लिए सीमित है।"
 
 #: apps/management/forms.py:15
 msgid "Temporary password. Leave blank to auto-generate a random one."
@@ -234,7 +235,9 @@ msgstr "पासवर्ड मेल नहीं खाते।"
 msgid ""
 "Employee ID must be 3-20 characters using only uppercase letters and numbers "
 "(e.g. EMP001, ADMIN001)."
-msgstr "कर्मचारी आईडी 3-20 अक्षरों की होनी चाहिए और केवल बड़े अक्षर तथा अंकों से बनी हो (जैसे EMP001, ADMIN001)।"
+msgstr ""
+"कर्मचारी आईडी 3-20 अक्षरों की होनी चाहिए और केवल बड़े अक्षर तथा अंकों से बनी हो (जैसे "
+"EMP001, ADMIN001)।"
 
 #: apps/users/views.py:98
 msgid ""
@@ -253,7 +256,9 @@ msgstr "बहुत अधिक पंजीकरण प्रयास। �
 msgid ""
 "Account created successfully. An admin must approve your account before you "
 "can sign in."
-msgstr "खाता सफलतापूर्वक बन गया। साइन इन करने से पहले एक प्रशासक को आपके खाते को अनुमोदित करना होगा।"
+msgstr ""
+"खाता सफलतापूर्वक बन गया। साइन इन करने से पहले एक प्रशासक को आपके खाते को अनुमोदित "
+"करना होगा।"
 
 #: apps/users/views.py:171
 msgid "Admin accounts cannot be approved via self-signup."
@@ -489,9 +494,9 @@ msgstr "एचआर डैशबोर्ड"
 msgid "Management"
 msgstr "प्रबंधन"
 
-#: templates/base.html:78 templates/management/user_create.html:20
-#: templates/users/login.html:76 templates/users/register.html:25
-#: templates/users/register.html:56
+#: templates/base.html:78 templates/management/console_home.html:50
+#: templates/management/user_create.html:20 templates/users/login.html:76
+#: templates/users/register.html:25 templates/users/register.html:56
 msgid "Create Account"
 msgstr "खाता बनाएँ"
 
@@ -616,7 +621,9 @@ msgstr "कोई प्रमाणपत्र नहीं मिला। �
 msgid ""
 "You have no certificates yet. Complete a mandatory course and pass the final "
 "assessment."
-msgstr "आपके पास अभी कोई प्रमाणपत्र नहीं है। एक अनिवार्य पाठ्यक्रम पूरा करें और अंतिम परीक्षा उत्तीर्ण करें।"
+msgstr ""
+"आपके पास अभी कोई प्रमाणपत्र नहीं है। एक अनिवार्य पाठ्यक्रम पूरा करें और अंतिम परीक्षा "
+"उत्तीर्ण करें।"
 
 #: templates/certificates/verify.html:3
 msgid "Certificate Verification | SRMS DRONA"
@@ -642,7 +649,9 @@ msgstr "जारी:"
 msgid ""
 "The name is partially shown. The full name, Employee ID, and department "
 "appear on the certificate PDF itself."
-msgstr "नाम आंशिक रूप से दिखाया गया है। पूरा नाम, कर्मचारी आईडी और विभाग प्रमाणपत्र पीडीएफ पर अंकित हैं।"
+msgstr ""
+"नाम आंशिक रूप से दिखाया गया है। पूरा नाम, कर्मचारी आईडी और विभाग प्रमाणपत्र पीडीएफ "
+"पर अंकित हैं।"
 
 #: templates/certificates/verify.html:42
 msgid "Certificate Not Found"
@@ -958,7 +967,9 @@ msgstr "पहुँच अस्वीकृत"
 msgid ""
 "You don't have permission to view this page. If you believe this is a "
 "mistake, please contact your administrator."
-msgstr "आपको यह पृष्ठ देखने की अनुमति नहीं है। यदि आपको लगता है कि यह गलती है, तो कृपया अपने प्रशासक से संपर्क करें।"
+msgstr ""
+"आपको यह पृष्ठ देखने की अनुमति नहीं है। यदि आपको लगता है कि यह गलती है, तो कृपया अपने "
+"प्रशासक से संपर्क करें।"
 
 #: templates/errors/404.html:9
 msgid "Page Not Found | SRMS DRONA"
@@ -1067,10 +1078,6 @@ msgstr "प्रशिक्षण सत्र"
 #: templates/management/console_home.html:48
 msgid "Import Staff (CSV)"
 msgstr "कर्मचारी आयात करें (CSV)"
-
-#: templates/management/console_home.html:50
-msgid "Create HR/HOD Account"
-msgstr "एचआर/अध्यक्ष खाता बनाएँ"
 
 #: templates/management/course_detail.html:12
 msgid "View as learner"
@@ -1206,7 +1213,9 @@ msgstr "कर्मचारी सामूहिक आयात (CSV)"
 msgid ""
 "Upload a CSV to create staff accounts in one step. Imported staff get an "
 "initial password equal to their Employee ID."
-msgstr "एक ही चरण में कर्मचारी खाते बनाने के लिए CSV अपलोड करें। आयातित कर्मचारियों का प्रारंभिक पासवर्ड उनकी कर्मचारी आईडी के बराबर होगा।"
+msgstr ""
+"एक ही चरण में कर्मचारी खाते बनाने के लिए CSV अपलोड करें। आयातित कर्मचारियों का प्रारंभिक "
+"पासवर्ड उनकी कर्मचारी आईडी के बराबर होगा।"
 
 #: templates/management/staff_import.html:13
 msgid "CSV File"
@@ -1236,7 +1245,9 @@ msgstr "एचआर / अध्यक्ष / कर्मचारी खा�
 msgid ""
 "Provision a new account manually. The new user can then manage training and "
 "approve signup requests."
-msgstr "नया खाता स्वतः बनाएँ। नया उपयोगकर्ता फिर प्रशिक्षण प्रबंधित कर सकेगा और पंजीकरण अनुरोध स्वीकृत कर सकेगा।"
+msgstr ""
+"नया खाता स्वतः बनाएँ। नया उपयोगकर्ता फिर प्रशिक्षण प्रबंधित कर सकेगा और पंजीकरण अनुरोध "
+"स्वीकृत कर सकेगा।"
 
 #: templates/quizzes/ai_quiz_generator.html:3
 msgid "Quiz Builder | SRMS DRONA"
@@ -1312,7 +1323,9 @@ msgstr "प्रमाणपत्र देखें"
 msgid ""
 "You need at least %(quiz.passing_score)s%% to pass. Please review the SOP "
 "and retry."
-msgstr "उत्तीर्ण होने के लिए आपको कम से कम %(quiz.passing_score)s%% अंक चाहिए। कृपया SOP दोबारा पढ़ें और पुनः प्रयास करें।"
+msgstr ""
+"उत्तीर्ण होने के लिए आपको कम से कम %(quiz.passing_score)s%% अंक चाहिए। कृपया SOP "
+"दोबारा पढ़ें और पुनः प्रयास करें।"
 
 #: templates/quizzes/quiz_result.html:36
 msgid "Retry Quiz"
@@ -1432,7 +1445,9 @@ msgstr "अपना ईमेल देखें"
 msgid ""
 "If an account exists for that email, we've sent a password reset link. Check "
 "your inbox (and spam)."
-msgstr "यदि उस ईमेल से कोई खाता मौजूद है, तो हमने पासवर्ड रीसेट लिंक भेजा है। अपना इनबॉक्स (और स्पैम) देखें।"
+msgstr ""
+"यदि उस ईमेल से कोई खाता मौजूद है, तो हमने पासवर्ड रीसेट लिंक भेजा है। अपना इनबॉक्स (और "
+"स्पैम) देखें।"
 
 #: templates/users/password_reset_form.html:8
 msgid "Reset Password | SRMS DRONA"
@@ -1534,7 +1549,9 @@ msgstr "खाता बनाएँ | SRMS DRONA लर्निंग ऐप"
 msgid ""
 "Register to join the SRMS DRONA Learning Platform. Your account must be "
 "approved by an admin before you can sign in."
-msgstr "SRMS DRONA लर्निंग प्लेटफ़ॉर्म में शामिल होने के लिए पंजीकरण करें। साइन इन करने से पहले एक प्रशासक को आपके खाते को अनुमोदित करना होगा।"
+msgstr ""
+"SRMS DRONA लर्निंग प्लेटफ़ॉर्म में शामिल होने के लिए पंजीकरण करें। साइन इन करने से पहले एक "
+"प्रशासक को आपके खाते को अनुमोदित करना होगा।"
 
 #: templates/users/register.html:60
 msgid "Already have an account?"
@@ -1543,3 +1560,6 @@ msgstr "पहले से खाता है?"
 #: templates/users/register.html:60
 msgid "Sign in"
 msgstr "साइन इन करें"
+
+#~ msgid "Create HR/HOD Account"
+#~ msgstr "एचआर/अध्यक्ष खाता बनाएँ"

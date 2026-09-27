@@ -1,33 +1,92 @@
-# SRMS DRONA — Learning & HR Analytics Platform
+# SRMS DRONA — Staff Learning & Training Platform
 
-A full-featured, production-ready skill-learning and performance-tracking platform for
-**non-teaching staff** at SRMS Group of Institutions. Users learn from structured courses,
-watch SOP videos, take AI-generated quizzes, earn QR-verified certificates, and are managed
-through an HR analytics console — all under strict role-based access control (RBAC).
+A training portal for the **non-teaching staff** of SRMS Group of Institutions. Staff watch
+short SOP videos, take quizzes, earn certificates, and see what training is still pending.
+Their Head of Department and the Super Admin manage the courses and track progress.
 
-> Built to spec (Project Plan + System Workflow). Deployed on **Render** (Django) against a
-> managed Postgres, with GitHub Actions CI and zero-cost single-worker hosting.
->
-> **Before changing anything here, read [`ENGINEERING.md`](ENGINEERING.md)** — it records the
-> invariants this project depends on and the traps that have already bitten us.
+**Live now:** <https://dronav2.onrender.com> · **Interface language:** English / हिन्दी
+
+---
+
+## 👥 Who uses it
+
+There are three kinds of user. Each one sees a different set of screens.
+
+| Role | What they do | Sign in with |
+|---|---|---|
+| **Staff** | Take assigned courses, watch videos, attempt quizzes, download certificates. | `EMP001`–`EMP006` |
+| **Head of Department (HOD)** | Everything a staff member can do, **plus** the management console: create courses, upload lessons, schedule sessions, enrol people, run HR analytics. One HOD per academic department. | `HOD_IT`, `HOD_CS`, `HOD_EN`, `HOD_EE`, `HOD_PHARM`, `HOD_MGMT` |
+| **Super Admin** | Everything an HOD can do, **plus** approving new sign-ups, creating HOD accounts, and full platform-wide analytics. | `ADMIN001` |
+
+> The old **Trainer** role no longer exists. The tier directly below Super Admin is
+> Head of Department.
+
+---
+
+## 🔑 Demo logins
+
+Created by `seed.py`. **The password is always the same as the Employee ID**, so `HOD_IT`
+signs in with `HOD_IT`.
+
+| Role | Employee ID | Password |
+|---|---|---|
+| Super Admin | `ADMIN001` | `ADMIN001` |
+| Head of Department — IT | `HOD_IT` | `HOD_IT` |
+| Head of Department — Computer Science | `HOD_CS` | `HOD_CS` |
+| Head of Department — English | `HOD_EN` | `HOD_EN` |
+| Head of Department — Electrical | `HOD_EE` | `HOD_EE` |
+| Head of Department — Pharmacy | `HOD_PHARM` | `HOD_PHARM` |
+| Head of Department — Management | `HOD_MGMT` | `HOD_MGMT` |
+| Staff | `EMP001` … `EMP006` | `drona123` |
+
+> ⚠️ This repository is **public**, so these are published constants, not secrets. They exist
+> only where you deliberately run `seed.py`. **Any instance you expose to the internet must
+> change them** — the admin password comes from the `DJANGO_ADMIN_PASSWORD` env var.
+> See [Passwords](#-passwords-and-roles-in-detail).
+
+**Want to try it without installing anything?** Open the live site and use the logins above.
+
+---
+
+## 📖 Contents
+
+**Start here**
+- [👥 Who uses it](#-who-uses-it) · [🔑 Demo logins](#-demo-logins) · [🚀 Quick Start (Local)](#-quick-start-local--step-by-step)
+- [🧭 Authentication & approval flow](#-authentication--approval-flow)
+
+**Using the app**
+- [✨ Highlights](#-highlights-for-a-showcase) · [✅ What works today](#-what-works-today) · [🧰 Tech stack](#-tech-stack)
+
+**Building and changing the code**
+- [🌐 Localisation — changing a translation](#-localisation--adding-or-changing-a-translation)
+- [🧪 Running tests](#-running-tests) · [📁 Project structure](#-project-structure)
+
+**Operations** *(for whoever runs the server — safe to skip)*
+- [🚀 Live deployment](#-live-deployment) · [🔐 Security model](#-security-model)
+- [☁️ Deploying to Render](#️-production-deployment-on-render-backend--the-live-target)
+- [🚦 CI/CD](#-cicd-github-actions) · [📄 License & usage](#-license--usage)
+
+> **Before changing how the system behaves, read [`ENGINEERING.md`](ENGINEERING.md).** It records
+> the invariants this project depends on and the traps that have already bitten us.
+> [`HANDOFF.md`](HANDOFF.md) is the running status log.
 
 ---
 
 ## ✨ Highlights (for a showcase)
 
 - **Employee-ID auth + RBAC** — three roles: **Staff / Learner**, **Head of Department**, **Super Admin**.
-  The login page splits into a *Staff/Trainee* tab and an *Admin/Management* tab so each persona
-  lands in the right workspace.
+  The login page has a *Staff* tab and an *Admin / Management* tab, so each kind of user lands in the
+  right workspace.
 - **Self-signup with admin approval workflow** — new accounts are created *inactive*, an admin or
   HOD approves or rejects them in the HR Dashboard, and the user gets an email either way.
   No lockout, no enumeration leaks.
 - **Admin provisions HOD accounts** — super admin creates HOD accounts directly (no signup
-  needed); those HR/HOD accounts get approval rights **and** the full management console.
-- **Certificate directory** — super admin and HR/HOD see exactly who completed which certificate,
+  needed); HOD accounts get approval rights **and** the full management console.
+- **Certificate directory** — super admin and HODs see exactly who completed which certificate,
   with a search box (employee ID / name / email) plus filters by department and course.
 - **Per-student course assignment** — assign a specific employee to a course, separate from the
   existing department-wide bulk-enroll.
-- **Editable training calendar** — super admin and HR/HOD add/edit/delete sessions directly on the
+- **Editable training calendar** — super admin and HODs add/edit/delete sessions directly on the
   calendar grid (regular staff still only view it).
 - **Category → Course → Module → Lesson** hierarchy with **auto-enrollment** into mandatory courses
   by department.
@@ -43,9 +102,9 @@ through an HR analytics console — all under strict role-based access control (
 - **HR analytics dashboard** — Chart.js visualizations + **CSV export**.
 - **Bilingual UI (English / हिन्दी)** — the whole interface is translated: navigation, buttons,
   form labels, validation messages, email subjects, the management console and every error page.
-  347 catalogued strings. Content (course/module/lesson/quiz titles and descriptions) is
+  349 catalogued strings. Content (course/module/lesson/quiz titles and descriptions) is
   bilingual via `_hi` model fields and switches with the UI. See
-  [Localisation](#localisation--adding-or-changing-a-translation)..
+  [Localisation](#-localisation--adding-or-changing-a-translation).
 - **PWA** — manifest + service worker, installable to home screen, works as an app.
 - **Email reminders** — APScheduler nudges staff with pending training (single-worker safe).
   The scheduler is **on** in production; actual delivery awaits SMTP credentials (see
@@ -60,7 +119,7 @@ through an HR analytics console — all under strict role-based access control (
 
 ---
 
-## ✅ Capabilities vs 🗺️ mapped to be made
+## ✅ What works today
 
 **Live in production** (`https://dronav2.onrender.com`, last probed 2026-09-26):
 Employee-ID auth + RBAC · approval workflow · admin provisioning · course hierarchy with
@@ -82,7 +141,7 @@ service has no `DJANGO_EMAIL_BACKEND`/SMTP credentials, so mail prints to logs a
 delivers. The repo logs a **WARNING** on both paths instead of failing silently — delivery stays
 off until the SMTP env vars below are set.
 
-**Mapped to be made** (ordered):
+**Still to do** (in order):
 1. **Go-live for email delivery** — scheduler already on; still needs `SMTP_USER`/`SMTP_PASSWORD`
    (+ host/port/TLS) and `DJANGO_EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend` on
    the Render service, redeploy, prove with `send_test_email`. Needs SMTP credentials — not doable
@@ -171,7 +230,7 @@ off until the SMTP env vars below are set.
   goes through `authenticate()` so an unknown Employee ID costs the same as a wrong password
   (Django hashes a dummy value) — the message and the timing both stay generic.
 - **Role-gated manager views** — certificate directory, course assignment, and calendar editing
-  honor the same single `_can_manage`/`_is_manager` check (super admin + HR/HOD), so there is no
+  honor the same single `_can_manage`/`_is_manager` check (super admin + HOD), so there is no
   divergent role logic to bypass.
 - **Background email** — approval/reminder/setup emails send on a daemon thread after commit with
   `EMAIL_TIMEOUT`, so SMTP stalls never block a request.
@@ -255,37 +314,26 @@ cp .env.example .env            # then edit settings as needed
 
 Open **http://127.0.0.1:8000/** in your browser.
 
-### Demo accounts (seed only — local / fresh environments)
+### 🔐 Passwords and roles, in detail
 
-> This repository is **public**: treat these as published constants, not secrets. They only
-> exist where you deliberately run `seed.py`. Any instance you expose must override them —
-> production uses `DJANGO_ADMIN_PASSWORD` (env-managed, never stored here).
+The login table is [near the top of this file](#-demo-logins). This part is only about *why* it
+works that way.
 
-Every HOD's password is their own Employee ID, so `HOD_IT` / `HOD_IT`.
+**One env var owns the admin password.** Both `seed.py` and the `set_admin_password`
+management command read `DJANGO_ADMIN_PASSWORD` (default `ADMIN001`). That is deliberate —
+they are two writers of the same field, so giving them two different variable names meant the
+live password depended on whichever ran last. Staff passwords are simply hardcoded `drona123`
+in the seed and are *not* re-synced, so re-seeding never clobbers a password somebody changed
+through the UI.
 
-| Role | Employee ID | Password | Department |
-|---|---|---|---|
-| Super Admin | `ADMIN001` | `ADMIN001` | — |
-| Head of Department | `HOD_IT` | `HOD_IT` | Computer & IT Lab |
-| Head of Department | `HOD_CS` | `HOD_CS` | Computer Science & Engineering |
-| Head of Department | `HOD_EN` | `HOD_EN` | English & Communication |
-| Head of Department | `HOD_EE` | `HOD_EE` | Electrical Engineering |
-| Head of Department | `HOD_PHARM` | `HOD_PHARM` | Pharmacy |
-| Head of Department | `HOD_MGMT` | `HOD_MGMT` | Management & Commerce |
-| Staff | `EMP001`–`EMP006` | `drona123` | various |
+`set_admin_password` runs on every boot (`manage.py boot`). So to actually change the
+production admin password: set the env var, then **deploy**. A plain restart is not enough —
+it re-runs the command with the previous value.
 
-The `trainer` role was removed (migration `users.0004`): the tier below Super Admin is
-Head of Department. Existing `trainer` rows were converted to `hod`; the legacy `EMP010`
-demo HOD was demoted to `staff` rather than deleted, so its enrollments and certificates
-keep their foreign keys. Delete it whenever you like — it holds nothing of value.
-
-There is exactly **one** env var for the admin password: `DJANGO_ADMIN_PASSWORD`
-(default `ADMIN001`). `seed.py` and the `set_admin_password` command both read it, so a local
-seed and a deployed service can never disagree — whichever runs last wins by design. Staff
-passwords are hardcoded `drona123` in the seed.
-
-`set_admin_password` runs on every boot, so changing the env var and redeploying is what
-actually rotates the production admin password. That is the intended mechanism.
+**Migration note.** The `trainer` role was removed in `users.0004`; the tier below Super Admin
+is Head of Department. Existing `trainer` rows were converted to `hod`. The legacy `EMP010`
+demo account was demoted to `staff` rather than deleted, so its enrollments and certificates
+keep their foreign keys — delete it whenever you like, it holds nothing of value.
 
 ---
 
@@ -339,7 +387,7 @@ reaching `{% trans %}`.
   it in the HR Dashboard (`/analytics/` → Pending Approvals). Approved users can then sign in and, if
   needed, reset their password via email.
 - **Admin-provisioned accounts** — the super admin can create HR / HOD / staff accounts directly from
-  the Management Console (`➕ Create HR/HOD Account`, `/manage/users/create/`). The new account is
+  the Management Console (`➕ Create Account`, `/manage/users/create/`). The new account is
   active immediately. HOD accounts get approval rights plus the full management console,
   so they can operate independently.
 - **Password reset** (`/password-reset/`) — emails a reset link via SMTP.
