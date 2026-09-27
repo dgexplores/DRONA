@@ -88,13 +88,14 @@ def create_hods():
             )
             print(f"HOD created: {emp_id} / {emp_id}")
         else:
-            # Re-sync role/department/password so a rename in seed.py takes effect.
-            hod.set_password(emp_id)
+            # Metadata re-synced, but NOT the password: it is set once at creation.
+            # Re-asserting it here would silently reset a rotated production password
+            # to the published Employee ID every time the seed was run.
             hod.role = 'hod'
             hod.department = dept
             hod.designation = designation
-            hod.save(update_fields=['password', 'role', 'department', 'designation'])
-            print(f"HOD re-synced: {emp_id} / {emp_id}")
+            hod.save(update_fields=['role', 'department', 'designation'])
+            print(f"HOD re-synced: {emp_id} (password left untouched)")
         created.append(emp_id)
     return created
 
@@ -439,11 +440,15 @@ def run():
         create_enrollments_and_progress(staff)
 
     print("=== Seed complete ===")
-    print("Login credentials (password = ID):")
+    print("Accounts (a HOD/staff password is set once, on creation):")
     print("  Admin: " + "ADMIN001 / " + SEED_ADMIN_PASSWORD)
     for emp_id in hods:
-        print(f"  HOD:   {emp_id} / {emp_id}")
-    print("  Staff: EMP001-EMP006 / drona123")
+        u = StaffUser.objects.get(employee_id=emp_id)
+        if u.check_password(emp_id):
+            print(f"  HOD:   {emp_id} / {emp_id}   (default)")
+        else:
+            print(f"  HOD:   {emp_id}   (password rotated - not shown)")
+    print("  Staff: EMP001-EMP006 / drona123   (default)")
 
 if __name__ == '__main__':
     run()
