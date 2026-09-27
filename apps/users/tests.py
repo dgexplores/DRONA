@@ -2,7 +2,7 @@ import os
 from unittest import mock
 
 from django.core.management import call_command
-from django.test import TestCase
+from django.test import SimpleTestCase, TestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
@@ -458,3 +458,19 @@ class HodRoleTests(TestCase):
         self.client.force_login(hod)
         r = self.client.get(reverse('mgmt_home'))
         self.assertEqual(r.status_code, 200)
+
+
+class DatabaseConnectionTests(SimpleTestCase):
+    """Managed Postgres drops idle SSL sockets; Django must notice and reconnect.
+
+    Regression guard: without CONN_HEALTH_CHECKS the app returns 500
+    ("SSL connection has been closed unexpectedly") to whichever unlucky user
+    arrives after the provider closes an idle connection.
+    """
+
+    def test_postgres_config_enables_health_checks(self):
+        from srms_dorna.settings import postgres_config
+        cfg = postgres_config('postgresql://u:p@db.example.invalid:5432/name')
+        self.assertTrue(cfg.get('CONN_HEALTH_CHECKS'),
+                        'conn_health_checks must stay on for managed Postgres')
+        self.assertEqual(cfg.get('CONN_MAX_AGE'), 600)

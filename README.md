@@ -39,12 +39,16 @@ signs in with `HOD_IT`.
 | Head of Department — Management | `HOD_MGMT` | `HOD_MGMT` |
 | Staff | `EMP001` … `EMP006` | `drona123` |
 
-> ⚠️ This repository is **public**, so these are published constants, not secrets. They exist
-> only where you deliberately run `seed.py`. **Any instance you expose to the internet must
-> change them** — the admin password comes from the `DJANGO_ADMIN_PASSWORD` env var.
+> ⚠️ This repository is **public**, so these are published constants, not secrets. They are
+> what a **fresh local `seed.py`** creates. They are **not** the live site's passwords.
+>
+> The public instance at <https://dronav2.onrender.com> has had **every account rotated to a
+> strong random password** — these defaults were found in the git history, so they were
+> worthless as credentials. To get access to a fresh clone, run `seed.py`. To get access to
+> the live site, ask whoever runs it.
 > See [Passwords](#-passwords-and-roles-in-detail).
 
-**Want to try it without installing anything?** Open the live site and use the logins above.
+**Want to try it without installing anything?** Run `seed.py` locally and use the logins above.
 
 ---
 
@@ -329,6 +333,12 @@ through the UI.
 `set_admin_password` runs on every boot (`manage.py boot`). So to actually change the
 production admin password: set the env var, then **deploy**. A plain restart is not enough —
 it re-runs the command with the previous value.
+
+The HOD and staff passwords live only in the database, set once when the account is created.
+`seed.py` deliberately does **not** re-assert them on a later run — otherwise re-seeding would
+silently reset a rotated production password back to the published Employee ID. The seed
+summary reports `default` or `rotated` per account by actually checking, rather than printing
+a password that may no longer be true.
 
 **Migration note.** The `trainer` role was removed in `users.0004`; the tier below Super Admin
 is Head of Department. Existing `trainer` rows were converted to `hod`. The legacy `EMP010`
