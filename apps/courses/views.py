@@ -64,9 +64,9 @@ def dashboard_view(request):
 
 
 def _manager_dashboard(request):
-    """Role-aware home page for super-admin and HOD/trainer accounts.
+    """Role-aware home page for super-admin and HOD accounts.
 
-    Super admin sees platform-wide numbers; HOD/trainers see department-level
+    Super admin sees platform-wide numbers; HODs see department-level
     numbers for their own department. Both get shortcuts to the management
     console, HR analytics, certificate directory, and pending approvals.
     """

@@ -232,7 +232,7 @@ class AIGeneratorAccessTests(TestCase):
         resp = self.client.get(reverse('generate_ai_quiz'))
         self.assertEqual(resp.status_code, 302)
 
-    def test_trainer_allowed(self):
+    def test_hod_allowed(self):
         self.client.login(employee_id='EMP311', password='pass12345')
         resp = self.client.get(reverse('generate_ai_quiz'))
         self.assertEqual(resp.status_code, 200)

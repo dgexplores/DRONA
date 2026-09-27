@@ -3,11 +3,12 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
+#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-27 15:52+0530\n"
+"POT-Creation-Date: 2026-09-27 16:35+0530\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,10 +17,9 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-
 #: apps/analytics/views.py:17
 msgid "Access restricted to HODs and HR Administrators."
-msgstr "पहुँच केवल विभागाध्यक्षों और एचआर प्रशासकों के लिए सीमित है।"
+msgstr ""
 
 #: apps/management/forms.py:15
 msgid "Temporary password. Leave blank to auto-generate a random one."
@@ -92,7 +92,6 @@ msgid "No linked course (optional)"
 msgstr "कोई संबद्ध पाठ्यक्रम नहीं (वैकल्पिक)"
 
 #: apps/management/views.py:73
-#| msgid "Access restricted to administrators and trainers."
 msgid "Access restricted to administrators and HODs."
 msgstr "पहुँच केवल प्रशासकों और विभागाध्यक्षों के लिए सीमित है।"
 
@@ -504,8 +503,7 @@ msgstr "एडमिन"
 msgid "Non-Teaching Staff"
 msgstr "गैर-शिक्षण कर्मचारी"
 
-#: templates/base.html:94
-#| msgid "Department"
+#: templates/base.html:94 templates/users/profile.html:40
 msgid "Head of Department"
 msgstr "विभागाध्यक्ष"
 
@@ -1352,6 +1350,10 @@ msgstr "कर्मचारी / प्रशिक्षु"
 msgid "Admin / Management"
 msgstr "एडमिन / प्रबंधन"
 
+#: templates/users/login.html:52 templates/users/login.html:69
+msgid "Enter your password"
+msgstr "अपना पासवर्ड दर्ज करें"
+
 #: templates/users/login.html:54
 msgid "Sign In"
 msgstr "साइन इन करें"
@@ -1360,13 +1362,17 @@ msgstr "साइन इन करें"
 msgid "Forgot password?"
 msgstr "पासवर्ड भूल गए?"
 
+#: templates/users/login.html:64
+msgid "Admin / HOD Employee ID"
+msgstr "एडमिन / HOD कर्मचारी आईडी"
+
 #: templates/users/login.html:71
 msgid "Sign In to Management"
 msgstr "प्रबंधन के लिए साइन इन करें"
 
 #: templates/users/login.html:72
-msgid "Admins &amp; Trainers land in the Management Console."
-msgstr "एडमिन और प्रशिक्षक सीधे प्रबंधन कंसोल में पहुँचते हैं।"
+msgid "Admins &amp; HODs land in the Management Console."
+msgstr "एडमिन और HOD प्रबंधन कंसोल में प्रवेश करते हैं।"
 
 #: templates/users/login.html:76
 msgid "Don't have an account?"
@@ -1483,8 +1489,6 @@ msgstr "पद:"
 #: templates/users/profile.html:40
 msgid "Role:"
 msgstr "भूमिका:"
-
-#: templates/users/profile.html:40
 
 #: templates/users/profile.html:50
 msgid "Badges"

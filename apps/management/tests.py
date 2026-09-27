@@ -121,7 +121,7 @@ class CreateAccountTests(TestCase):
         self.assertEqual(u.role, 'hod')
         self.assertTrue(u.check_password('Temp@12345'))
 
-    def test_trainer_cannot_create_account(self):
+    def test_hod_cannot_create_account(self):
         self.client.login(employee_id='EMP11', password='pass12345')
         resp = self.client.get(reverse('mgmt_create_user'))
         self.assertRedirects(resp, reverse('mgmt_home'))

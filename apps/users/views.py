@@ -263,7 +263,7 @@ def profile_view(request):
 
 
 def _manager_profile(request):
-    """Role-aware profile for super-admin and HOD/trainer accounts.
+    """Role-aware profile for super-admin and HOD accounts.
 
     Shows account details plus a scoped management overview instead of the
     learner badge/enrollment trackers.

@@ -37,7 +37,7 @@
         </div>
         <div class="lesson-item">
             <div class="lesson-icon">🎖️</div>
-            <div>{% trans "Role:" %} {% if staff_user.role == "staff" %}{% trans "Non-Teaching Staff" %}{% elif staff_user.role == "trainer" %}{% trans "Departmental Trainer / HOD" %}{% elif staff_user.role == "admin" %}{% trans "Super Admin" %}{% else %}{{ staff_user.get_role_display }}{% endif %}</div>
+            <div>{% trans "Role:" %} {% if staff_user.role == "staff" %}{% trans "Non-Teaching Staff" %}{% elif staff_user.role == "hod" %}{% trans "Head of Department" %}{% elif staff_user.role == "admin" %}{% trans "Super Admin" %}{% else %}{{ staff_user.get_role_display }}{% endif %}</div>
         </div>
         <div class="lesson-item">
             <div class="lesson-icon">📧</div>
