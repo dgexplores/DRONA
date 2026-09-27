@@ -222,9 +222,9 @@ class AIGeneratorAccessTests(TestCase):
             employee_id="EMP310", username="emp310", email="a@b.com",
             password="pass12345", role="staff"
         )
-        self.trainer = StaffUser.objects.create_user(
+        self.hod = StaffUser.objects.create_user(
             employee_id="EMP311", username="emp311", email="c@d.com",
-            password="pass12345", role="trainer"
+            password="pass12345", role="hod"
         )
 
     def test_staff_denied(self):

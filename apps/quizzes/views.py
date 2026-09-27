@@ -106,10 +106,10 @@ def submit_quiz_view(request, quiz_id):
 @login_required
 def generate_ai_quiz(request):
     """
-    Admin / Trainer view to trigger Gemini AI Quiz generation from text/PDF SOP.
+    Admin / HOD view to trigger Gemini AI Quiz generation from text/PDF SOP.
     """
     if not bool(getattr(request.user, 'is_manager', False)):
-        messages.error(request, "Permission denied. Only Trainers and HODs can generate AI quizzes.")
+        messages.error(request, "Permission denied. Only HODs and administrators can generate AI quizzes.")
         return redirect('dashboard')
 
     modules = Module.objects.select_related('course').all()

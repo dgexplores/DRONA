@@ -426,3 +426,35 @@ class AdminPasswordSyncTests(TestCase):
         seed.create_super_admin()
         u.refresh_from_db()
         self.assertTrue(u.check_password(seed.SEED_ADMIN_PASSWORD))
+
+
+class HodRoleTests(TestCase):
+    """The tier below Super Admin is Head of Department. 'trainer' no longer exists."""
+
+    def test_trainer_is_not_a_valid_role(self):
+        self.assertNotIn('trainer', dict(StaffUser.ROLE_CHOICES))
+        self.assertIn('hod', dict(StaffUser.ROLE_CHOICES))
+
+    def test_hod_is_a_manager(self):
+        hod = StaffUser.objects.create_user(
+            employee_id='HOD_IT', username='hod_it', email='hod_it@srms.ac.in',
+            password='HOD_IT', role='hod',
+        )
+        self.assertTrue(hod.is_manager)
+        self.assertFalse(hod.is_super_admin)
+
+    def test_plain_staff_is_not_a_manager(self):
+        s = StaffUser.objects.create_user(
+            employee_id='EMPX', username='empx', email='empx@srms.ac.in',
+            password='drona123', role='staff',
+        )
+        self.assertFalse(s.is_manager)
+
+    def test_hod_reaches_management_console(self):
+        hod = StaffUser.objects.create_user(
+            employee_id='HOD_IT', username='hod_it', email='hod_it@srms.ac.in',
+            password='HOD_IT', role='hod',
+        )
+        self.client.force_login(hod)
+        r = self.client.get(reverse('mgmt_home'))
+        self.assertEqual(r.status_code, 200)

@@ -481,3 +481,26 @@ Note the operational lesson: an env-var change is applied by a **deploy**, not b
 `restart`. A restart ran `boot` and logged "ADMIN001 password rotated." while still using
 the previous value - the log line proves `set_admin_password` ran, not which value it read.
 Verify a rotation by checking the login, not the log.
+
+
+## Role change: `trainer` removed, tier below admin is HOD (2026-09-27)
+
+Per the owner's instruction — "keep below him HODs only no trainer".
+
+- `ROLE_CHOICES` is now `staff` / `hod` ("Head of Department") / `admin`. The `trainer`
+  value is gone, not just relabelled, so `is_manager` and every inline permission check
+  were updated (`analytics`, `courses`, `users`, `management`, `quizzes`).
+- `users.0003_alter_staffuser_role` changes the choices;
+  `users.0004_trainer_to_hod` converts existing `trainer` rows to `hod` and is reversible.
+- Legacy demo HOD `EMP010` (designation "HOD, Computer & IT Lab") is **demoted to
+  `staff`, not deleted**, so its enrollments / certificates / quiz attempts keep their
+  foreign keys. It is excluded from the reverse migration. Delete it when convenient.
+- New accounts, one HOD per academic department, password = employee ID:
+  `HOD_IT`, `HOD_CS`, `HOD_EN`, `HOD_EE`, `HOD_PHARM`, `HOD_MGMT`. Departments CS, EN,
+  EE, PHARM and MGMT were **added**; the pre-existing support departments (LIB, MEC,
+  ADM, FAC, HCS) were left in place so current staff keep a valid department.
+- Admin: `ADMIN001` / `ADMIN001`.
+
+Operational note: `DJANGO_ADMIN_PASSWORD` **must** be set to `ADMIN001` on the service.
+`set_admin_password` runs on every boot and overwrites whatever the seed writes, so
+leaving it at the old value silently reverts the admin password on the next deploy.

@@ -295,7 +295,7 @@ def _generate_fallback_questions(module_title, text_content, num_questions):
             "q_hi": f"{module_title} के दौरान परिचालन विसंगति के मामले में, कर्मचारियों को पहला क्या कदम उठाना चाहिए?",
             "opts": [
                 ("Ignore the anomaly if minor", "यदि मामूली हो तो विसंगति को नज़रअंदाज़ करें", False),
-                ("Immediately notify the Departmental HOD / Trainer and record in maintenance log", "तुरंत विभागाध्यक्ष/ट्रेनर को सूचित करें और रजिस्टर में दर्ज करें", True),
+                ("Immediately notify the Head of Department and record in maintenance log", "तुरंत विभागाध्यक्ष को सूचित करें और रजिस्टर में दर्ज करें", True),
                 ("Attempt unauthorized equipment modification", "अनधिकृत उपकरण संशोधन का प्रयास करें", False),
                 ("Leave the workspace unattended", "कार्यस्थल को लावारिस छोड़ दें", False),
             ],

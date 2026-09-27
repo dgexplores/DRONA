@@ -46,7 +46,7 @@ def hr_dashboard_view(request):
 
     recent_attempts = QuizAttempt.objects.select_related('staff_user', 'quiz').order_by('-attempted_at')[:10]
 
-    is_admin = request.user.role in ('admin', 'trainer') or request.user.is_superuser
+    is_admin = request.user.role in ('admin', 'hod') or request.user.is_superuser
     pending_qs = StaffUser.objects.filter(is_active=False).select_related('department').order_by('date_joined') if is_admin else StaffUser.objects.none()
     paginator = Paginator(pending_qs, 20)
     pending_page = paginator.get_page(request.GET.get('pending_page'))

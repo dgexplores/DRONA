@@ -17,9 +17,9 @@ class AnalyticsAccessTests(TestCase):
             employee_id="EMP500", username="emp500", email="a@b.com",
             password="pass12345", role="staff", department=self.dept
         )
-        self.trainer = StaffUser.objects.create_user(
+        self.hod = StaffUser.objects.create_user(
             employee_id="EMP501", username="emp501", email="c@d.com",
-            password="pass12345", role="trainer", department=self.dept
+            password="pass12345", role="hod", department=self.dept
         )
 
     def test_staff_denied_hr_dashboard(self):
@@ -27,7 +27,7 @@ class AnalyticsAccessTests(TestCase):
         resp = self.client.get(reverse('hr_dashboard'))
         self.assertEqual(resp.status_code, 302)
 
-    def test_trainer_allowed_hr_dashboard(self):
+    def test_hod_allowed_hr_dashboard(self):
         self.client.login(employee_id='EMP501', password='pass12345')
         resp = self.client.get(reverse('hr_dashboard'))
         self.assertEqual(resp.status_code, 200)
@@ -39,7 +39,7 @@ class AnalyticsAccessTests(TestCase):
         self.assertEqual(resp.status_code, 403)
         self.assertTemplateUsed(resp, 'errors/403.html')
 
-    def test_trainer_csv_export(self):
+    def test_hod_csv_export(self):
         self.client.login(employee_id='EMP501', password='pass12345')
         resp = self.client.get(reverse('export_staff_csv'))
         self.assertEqual(resp.status_code, 200)

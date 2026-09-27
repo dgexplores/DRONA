@@ -6,7 +6,7 @@ django.setup()
 # Same env var the deployed service uses: set_admin_password (run by `boot` on
 # every start) reads DJANGO_ADMIN_PASSWORD. Reading one var in one place keeps a
 # local seed and a deployed service from disagreeing about the admin password.
-SEED_ADMIN_PASSWORD = os.environ.get('DJANGO_ADMIN_PASSWORD', 'Admin12345')
+SEED_ADMIN_PASSWORD = os.environ.get('DJANGO_ADMIN_PASSWORD', 'ADMIN001')
 
 from apps.users.models import StaffUser, Department
 from apps.courses.models import Category, Course, Module, Lesson, Enrollment, LessonProgress
@@ -21,6 +21,12 @@ def create_departments():
         ('Administration Office', 'ADM', 'Handles administrative records, filing, and office ERP.'),
         ('Facility & Maintenance', 'FAC', 'Manages campus facilities, electrical, and maintenance.'),
         ('Healthcare & Support', 'HCS', 'Provides healthcare support and first-aid services.'),
+        # Academic departments. Each one gets a HOD account (HOD_<CODE>) below.
+        ('Computer Science & Engineering', 'CS', 'Programming, algorithms, and software engineering.'),
+        ('English & Communication', 'EN', 'Communication skills, technical writing, and soft skills.'),
+        ('Electrical Engineering', 'EE', 'Power systems, circuits, and electrical maintenance.'),
+        ('Pharmacy', 'PHARM', 'Pharmaceutical sciences, dispensing, and drug safety.'),
+        ('Management & Commerce', 'MGMT', 'Management studies, commerce, and business administration.'),
     ]
     created = []
     for name, code, desc in depts:
@@ -48,6 +54,50 @@ def create_super_admin():
         print(f"Super Admin password re-synced: ADMIN001 / {SEED_ADMIN_PASSWORD}")
     return admin
 
+# One HOD per academic department. Employee ID is HOD_<CODE> and the password is
+# the same string, so a HOD's own ID is also their password.
+HOD_DEPARTMENTS = [
+    ('IT', 'Information Technology', 'Head of Department, Information Technology'),
+    ('CS', 'Computer Science', 'Head of Department, Computer Science'),
+    ('EN', 'English', 'Head of Department, English'),
+    ('EE', 'Electrical Engineering', 'Head of Department, Electrical Engineering'),
+    ('PHARM', 'Pharmacy', 'Head of Department, Pharmacy'),
+    ('MGMT', 'Management', 'Head of Department, Management'),
+]
+
+def create_hods():
+    created = []
+    for code, name, designation in HOD_DEPARTMENTS:
+        dept = Department.objects.filter(code=code).first()
+        if dept is None:
+            print(f"  !! department {code} missing; skipping HOD_{code}")
+            continue
+        emp_id = f'HOD_{code}'
+        hod = StaffUser.objects.filter(employee_id=emp_id).first()
+        if hod is None:
+            StaffUser.objects.create_user(
+                employee_id=emp_id,
+                username=emp_id.lower(),
+                email=f'{emp_id.lower()}@srms.ac.in',
+                first_name=name,
+                last_name='HOD',
+                password=emp_id,
+                role='hod',
+                department=dept,
+                designation=designation,
+            )
+            print(f"HOD created: {emp_id} / {emp_id}")
+        else:
+            # Re-sync role/department/password so a rename in seed.py takes effect.
+            hod.set_password(emp_id)
+            hod.role = 'hod'
+            hod.department = dept
+            hod.designation = designation
+            hod.save(update_fields=['password', 'role', 'department', 'designation'])
+            print(f"HOD re-synced: {emp_id} / {emp_id}")
+        created.append(emp_id)
+    return created
+
 def create_staff(dept):
     staff_data = [
         ('EMP001', 'Amit', 'Sharma', 'Lab Assistant', 'staff'),
@@ -70,20 +120,9 @@ def create_staff(dept):
                 role=role,
                 designation=designation,
             )
-    # HOD / Trainer
-    if not StaffUser.objects.filter(employee_id='EMP010').exists():
-        StaffUser.objects.create_user(
-            employee_id='EMP010',
-            username='hod',
-            email='hod.it@srms.ac.in',
-            first_name='Rajesh',
-            last_name='Yadav',
-            password='drona123',
-            department=dept,
-            role='trainer',
-            designation='HOD, Computer & IT Lab',
-        )
-    print("Staff created. Credentials: EMP001-EMP006, EMP010 / drona123")
+    # Legacy HOD/Trainer demo account (EMP010) is intentionally not recreated:
+    # the HOD tier is now HOD_<DEPT_CODE>, one per academic department.
+    print("Staff created. Credentials: EMP001-EMP006 / drona123")
 
 def create_courses(departments):
     dept_map = {d.code: d for d in departments}
@@ -391,6 +430,7 @@ def run():
     print("=== SRMS DRONA Seed Script ===")
     departments = create_departments()
     create_super_admin()
+    hods = create_hods()
     create_staff(departments[1])  # IT dept
     course_map = create_courses(departments)
     create_quizzes(course_map)
@@ -399,10 +439,11 @@ def run():
         create_enrollments_and_progress(staff)
 
     print("=== Seed complete ===")
-    print("Login credentials:")
-    print("  Admin:     ADMIN001 / " + SEED_ADMIN_PASSWORD)
-    print("  HOD/Train: EMP010   / drona123")
-    print("  Staff:     EMP001-EMP006 / drona123")
+    print("Login credentials (password = ID):")
+    print("  Admin: " + "ADMIN001 / " + SEED_ADMIN_PASSWORD)
+    for emp_id in hods:
+        print(f"  HOD:   {emp_id} / {emp_id}")
+    print("  Staff: EMP001-EMP006 / drona123")
 
 if __name__ == '__main__':
     run()

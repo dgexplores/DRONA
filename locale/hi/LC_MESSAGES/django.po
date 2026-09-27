@@ -3,12 +3,11 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-26 20:33+0530\n"
+"POT-Creation-Date: 2026-09-27 15:52+0530\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,9 +16,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
 #: apps/analytics/views.py:17
 msgid "Access restricted to HODs and HR Administrators."
-msgstr ""
+msgstr "पहुँच केवल विभागाध्यक्षों और एचआर प्रशासकों के लिए सीमित है।"
 
 #: apps/management/forms.py:15
 msgid "Temporary password. Leave blank to auto-generate a random one."
@@ -92,8 +92,9 @@ msgid "No linked course (optional)"
 msgstr "कोई संबद्ध पाठ्यक्रम नहीं (वैकल्पिक)"
 
 #: apps/management/views.py:73
-msgid "Access restricted to administrators and trainers."
-msgstr "पहुँच केवल प्रशासकों और प्रशिक्षकों तक सीमित है।"
+#| msgid "Access restricted to administrators and trainers."
+msgid "Access restricted to administrators and HODs."
+msgstr "पहुँच केवल प्रशासकों और विभागाध्यक्षों के लिए सीमित है।"
 
 #: apps/management/views.py:123 templates/management/console_home.html:38
 msgid "Create Course"
@@ -503,9 +504,10 @@ msgstr "एडमिन"
 msgid "Non-Teaching Staff"
 msgstr "गैर-शिक्षण कर्मचारी"
 
-#: templates/base.html:94 templates/users/profile.html:40
-msgid "Departmental Trainer / HOD"
-msgstr "विभागीय प्रशिक्षक / अध्यक्ष"
+#: templates/base.html:94
+#| msgid "Department"
+msgid "Head of Department"
+msgstr "विभागाध्यक्ष"
 
 #: templates/base.html:94 templates/users/profile.html:40
 msgid "Super Admin"
@@ -1481,6 +1483,8 @@ msgstr "पद:"
 #: templates/users/profile.html:40
 msgid "Role:"
 msgstr "भूमिका:"
+
+#: templates/users/profile.html:40
 
 #: templates/users/profile.html:50
 msgid "Badges"

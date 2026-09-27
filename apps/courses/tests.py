@@ -42,7 +42,7 @@ class CourseFlowTests(TestCase):
     def test_manager_sees_command_center_not_learner_catalog(self):
         manager = StaffUser.objects.create_user(
             employee_id="HOD001", username="hod001", email="h@y.com",
-            password="pass12345", role="trainer", department=self.dept
+            password="pass12345", role="hod", department=self.dept
         )
         self.client.force_login(manager)
         resp = self.client.get(reverse('dashboard'))
@@ -58,7 +58,7 @@ class CourseFlowTests(TestCase):
         hr_dept = Department.objects.create(name="Corporate", code="CORP")
         manager = StaffUser.objects.create_user(
             employee_id="HOD002", username="hod002", email="h2@y.com",
-            password="pass12345", role="trainer", department=hr_dept
+            password="pass12345", role="hod", department=hr_dept
         )
         staff = StaffUser.objects.create_user(
             employee_id="EMP300", username="emp300", email="s@y.com",
@@ -102,7 +102,7 @@ class CourseFlowTests(TestCase):
     def test_manager_can_preview_any_course(self):
         manager = StaffUser.objects.create_user(
             employee_id="TRAIN200", username="train200", email="t@y.com",
-            password="pass12345", role="trainer"
+            password="pass12345", role="hod"
         )
         self.client.login(employee_id='TRAIN200', password='pass12345')
         elective = Course.objects.create(title="ERP", category=self.cat, is_mandatory=False)
@@ -220,7 +220,7 @@ class TrainingCalendarManagerTests(TestCase):
         self.cat = Category.objects.create(name="Safety")
         self.training_calendar_staff = StaffUser.objects.create_user(
             employee_id="TF1", username="tf1", email="tf1@y.com",
-            password="pass12345", role="trainer", department=self.dept
+            password="pass12345", role="hod", department=self.dept
         )
         self.emp = StaffUser.objects.create_user(
             employee_id="EMP300", username="emp300", email="emp300@y.com",
@@ -228,8 +228,8 @@ class TrainingCalendarManagerTests(TestCase):
         )
         self.manager_flag_route = reverse('training_calendar')
 
-    def test_trainer_sees_manager_controls(self):
-        self.assertTrue(self.client.login(employee_id='TF1', password='pass12345'), 'trainer login failed')
+    def test_hod_sees_manager_controls(self):
+        self.assertTrue(self.client.login(employee_id='TF1', password='pass12345'), 'hod login failed')
         resp = self.client.get(self.manager_flag_route)
         self.assertEqual(resp.status_code, 200, msg=f"got {resp.status_code} -> {getattr(resp,'url',None)}")
         self.assertTrue(resp.context['is_manager'])

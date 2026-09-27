@@ -163,7 +163,7 @@ def register_view(request):
 @login_required
 @require_POST
 def approve_user(request, user_id):
-    if request.user.role not in ('admin', 'trainer') and not request.user.is_superuser:
+    if request.user.role not in ('admin', 'hod') and not request.user.is_superuser:
         return render(request, 'errors/403.html', status=403)
 
     target = get_object_or_404(StaffUser, id=user_id)
@@ -185,7 +185,7 @@ def approve_user(request, user_id):
 @login_required
 @require_POST
 def reject_user(request, user_id):
-    if request.user.role not in ('admin', 'trainer') and not request.user.is_superuser:
+    if request.user.role not in ('admin', 'hod') and not request.user.is_superuser:
         return render(request, 'errors/403.html', status=403)
 
     target = get_object_or_404(StaffUser, id=user_id)
@@ -242,7 +242,7 @@ def logout_view(request):
 @login_required
 def profile_view(request):
     staff_user = request.user
-    is_manager = staff_user.role in ('admin', 'trainer') or staff_user.is_superuser or staff_user.is_staff
+    is_manager = staff_user.role in ('admin', 'hod') or staff_user.is_superuser or staff_user.is_staff
 
     if is_manager:
         return _manager_profile(request)

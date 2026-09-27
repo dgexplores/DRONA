@@ -30,7 +30,7 @@ def _as_int(value, default=0):
 def dashboard_view(request):
     user = request.user
 
-    # Managers (super admin / HOD / trainer) get a command-center dashboard,
+    # Managers (super admin / HOD) get a command-center dashboard,
     # not the learner catalogue. Return before any learner auto-enrollment.
     is_manager = bool(getattr(user, 'is_manager', False))
     if is_manager:
@@ -282,7 +282,7 @@ def training_calendar(request):
     for s in sessions:
         day_map.setdefault(s.date.day, []).append(s)
 
-    is_manager = request.user.role in ('trainer', 'admin') or request.user.is_superuser or request.user.is_staff
+    is_manager = request.user.role in ('hod', 'admin') or request.user.is_superuser or request.user.is_staff
 
     context = {
         'sessions': sessions,

@@ -54,7 +54,7 @@
                 {% trans "Training Calendar" %}
             </a>
 
-            {% if user.role == 'trainer' or user.role == 'admin' or user.is_staff %}
+            {% if user.role == 'hod' or user.role == 'admin' or user.is_staff %}
             <div class="nav-group-label">{% trans "Administration" %}</div>
 
             <a href="{% url 'generate_ai_quiz' %}" class="sidebar-link {% if url_name == 'generate_ai_quiz' %}active{% endif %}">
@@ -91,7 +91,7 @@
                 <div class="avatar">{{ user.first_name|first|default:"S" }}{{ user.last_name|first }}</div>
                 <div>
                     <span class="sidebar-user-name">{{ user.get_full_name|default:user.employee_id }}</span>
-                    <span class="sidebar-user-role">{% if user.role == "staff" %}{% trans "Non-Teaching Staff" %}{% elif user.role == "trainer" %}{% trans "Departmental Trainer / HOD" %}{% elif user.role == "admin" %}{% trans "Super Admin" %}{% else %}{{ user.get_role_display }}{% endif %}</span>
+                    <span class="sidebar-user-role">{% if user.role == "staff" %}{% trans "Non-Teaching Staff" %}{% elif user.role == "hod" %}{% trans "Head of Department" %}{% elif user.role == "admin" %}{% trans "Super Admin" %}{% else %}{{ user.get_role_display }}{% endif %}</span>
                 </div>
             </div>
         </div>

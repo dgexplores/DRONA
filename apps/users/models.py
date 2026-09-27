@@ -23,7 +23,7 @@ class Department(models.Model):
 class StaffUser(AbstractUser):
     ROLE_CHOICES = (
         ('staff', 'Non-Teaching Staff'),
-        ('trainer', 'Departmental Trainer / HOD'),
+        ('hod', 'Head of Department'),
         ('admin', 'Super Admin'),
     )
     LANGUAGE_CHOICES = (
@@ -48,9 +48,9 @@ class StaffUser(AbstractUser):
 
     @property
     def is_manager(self):
-        """Single source for manager check: trainer/admin or Django staff/superuser."""
+        """Single source for manager check: hod/admin or Django staff/superuser."""
         return (
-            self.role in ('admin', 'trainer')
+            self.role in ('admin', 'hod')
             or self.is_superuser
             or self.is_staff
         )

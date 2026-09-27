@@ -101,10 +101,10 @@ class CreateAccountTests(TestCase):
             email="admin8@srms.ac.in", password="pass12345",
             role="admin", is_staff=True, is_superuser=True,
         )
-        self.trainer = StaffUser.objects.create_user(
+        self.hod = StaffUser.objects.create_user(
             employee_id="EMP11", username="emp11",
             email="emp11@srms.ac.in", password="pass12345",
-            role="trainer",
+            role="hod",
         )
 
     def test_admin_can_create_hr_account(self):
@@ -113,12 +113,12 @@ class CreateAccountTests(TestCase):
             'employee_id': 'HR001', 'first_name': 'Ritu',
             'last_name': 'Arora', 'email': 'ritu@srms.ac.in',
             'department': self.dept.pk, 'designation': 'HR Manager',
-            'role': 'trainer', 'password': 'Temp@12345',
+            'role': 'hod', 'password': 'Temp@12345',
         })
         self.assertRedirects(resp, reverse('mgmt_home'))
         u = StaffUser.objects.get(employee_id='HR001')
         self.assertTrue(u.is_active)
-        self.assertEqual(u.role, 'trainer')
+        self.assertEqual(u.role, 'hod')
         self.assertTrue(u.check_password('Temp@12345'))
 
     def test_trainer_cannot_create_account(self):
@@ -148,7 +148,7 @@ class CreateAccountTests(TestCase):
         resp = self.client.post(reverse('mgmt_create_user'), {
             'employee_id': 'HR010', 'first_name': 'Ritu', 'last_name': 'Arora',
             'email': 'ritu2@srms.ac.in', 'department': self.dept.pk,
-            'designation': 'HR Manager', 'role': 'trainer', 'password': secret,
+            'designation': 'HR Manager', 'role': 'hod', 'password': secret,
         })
         self.assertRedirects(resp, reverse('mgmt_home'))
         # Cookies carry queued messages; the rendered page carries the rest.

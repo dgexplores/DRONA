@@ -15,13 +15,13 @@ through an HR analytics console — all under strict role-based access control (
 
 ## ✨ Highlights (for a showcase)
 
-- **Employee-ID auth + RBAC** — three roles: **Staff / Learner**, **HOD / Trainer**, **Super Admin**.
+- **Employee-ID auth + RBAC** — three roles: **Staff / Learner**, **Head of Department**, **Super Admin**.
   The login page splits into a *Staff/Trainee* tab and an *Admin/Management* tab so each persona
   lands in the right workspace.
 - **Self-signup with admin approval workflow** — new accounts are created *inactive*, an admin or
-  trainer/HOD approves or rejects them in the HR Dashboard, and the user gets an email either way.
+  HOD approves or rejects them in the HR Dashboard, and the user gets an email either way.
   No lockout, no enumeration leaks.
-- **Admin provisions HR / HOD accounts** — super admin creates trainer accounts directly (no signup
+- **Admin provisions HOD accounts** — super admin creates HOD accounts directly (no signup
   needed); those HR/HOD accounts get approval rights **and** the full management console.
 - **Certificate directory** — super admin and HR/HOD see exactly who completed which certificate,
   with a search box (employee ID / name / email) plus filters by department and course.
@@ -261,14 +261,26 @@ Open **http://127.0.0.1:8000/** in your browser.
 > exist where you deliberately run `seed.py`. Any instance you expose must override them —
 > production uses `DJANGO_ADMIN_PASSWORD` (env-managed, never stored here).
 
-| Role | Employee ID | Password |
-|---|---|---|
-| Super Admin | `ADMIN001` | `Admin12345` |
-| HOD / Trainer | `EMP010` | `drona123` |
-| Staff | `EMP001`–`EMP006` | `drona123` |
+Every HOD's password is their own Employee ID, so `HOD_IT` / `HOD_IT`.
+
+| Role | Employee ID | Password | Department |
+|---|---|---|---|
+| Super Admin | `ADMIN001` | `ADMIN001` | — |
+| Head of Department | `HOD_IT` | `HOD_IT` | Computer & IT Lab |
+| Head of Department | `HOD_CS` | `HOD_CS` | Computer Science & Engineering |
+| Head of Department | `HOD_EN` | `HOD_EN` | English & Communication |
+| Head of Department | `HOD_EE` | `HOD_EE` | Electrical Engineering |
+| Head of Department | `HOD_PHARM` | `HOD_PHARM` | Pharmacy |
+| Head of Department | `HOD_MGMT` | `HOD_MGMT` | Management & Commerce |
+| Staff | `EMP001`–`EMP006` | `drona123` | various |
+
+The `trainer` role was removed (migration `users.0004`): the tier below Super Admin is
+Head of Department. Existing `trainer` rows were converted to `hod`; the legacy `EMP010`
+demo HOD was demoted to `staff` rather than deleted, so its enrollments and certificates
+keep their foreign keys. Delete it whenever you like — it holds nothing of value.
 
 There is exactly **one** env var for the admin password: `DJANGO_ADMIN_PASSWORD`
-(default `Admin12345`). `seed.py` and the `set_admin_password` command both read it, so a local
+(default `ADMIN001`). `seed.py` and the `set_admin_password` command both read it, so a local
 seed and a deployed service can never disagree — whichever runs last wins by design. Staff
 passwords are hardcoded `drona123` in the seed.
 
@@ -323,12 +335,12 @@ reaching `{% trans %}`.
 - **Login** (`/login/`) — two tabs:
   - **Staff / Trainee** → learner dashboard.
   - **Admin / Management** → Management Console (`/manage/`).
-- **Self-signup** (`/register/`) creates an **inactive** account. An admin **or trainer/HOD** approves
+- **Self-signup** (`/register/`) creates an **inactive** account. An admin **or HOD** approves
   it in the HR Dashboard (`/analytics/` → Pending Approvals). Approved users can then sign in and, if
   needed, reset their password via email.
 - **Admin-provisioned accounts** — the super admin can create HR / HOD / staff accounts directly from
   the Management Console (`➕ Create HR/HOD Account`, `/manage/users/create/`). The new account is
-  active immediately. HR/HOD (trainer) accounts get approval rights plus the full management console,
+  active immediately. HOD accounts get approval rights plus the full management console,
   so they can operate independently.
 - **Password reset** (`/password-reset/`) — emails a reset link via SMTP.
 

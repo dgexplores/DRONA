@@ -91,7 +91,7 @@ class ManagerCertificateDirectoryTests(TestCase):
         self.course = Course.objects.create(title="Safety", category=self.cat)
         self.manager = StaffUser.objects.create_user(
             employee_id="TRAIN1", username="train1", email="train@b.com",
-            password="pass12345", role="trainer"
+            password="pass12345", role="hod"
         )
         self.staff = StaffUser.objects.create_user(
             employee_id="EMP500", username="emp500", email="s@b.com",
@@ -172,7 +172,7 @@ class ProtectedMediaTests(TestCase):
     def test_manager_can_fetch_any_certificate(self):
         manager = StaffUser.objects.create_user(
             employee_id="TRAIN9", username="train9", email="m@b.com",
-            password="pass12345", role="trainer"
+            password="pass12345", role="hod"
         )
         self.assertEqual(self._fetch(manager, self.media_path).status_code, 200)
 
