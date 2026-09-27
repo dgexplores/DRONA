@@ -12,7 +12,17 @@
     {{ course.title }} &mdash; {% trans "Module" %} {{ lesson.module.order }} &middot; {% trans "Lesson" %} {{ lesson.order }}
 </p>
 
-{% if lesson.lesson_type == 'video' and video.kind == 'embed' %}
+{% if lesson.lesson_type == 'video' and lesson.video_file %}
+<div class="video-wrapper">
+    <video id="lesson-video" data-lesson-id="{{ lesson.id }}"
+           data-resume="{{ progress.last_position_seconds }}"
+           src="{% url 'lesson_video' lesson.id %}"
+           controls preload="metadata">
+        {% trans "Your browser cannot play this video format." %}
+    </video>
+    <p class="video-fallback"><a href="{% url 'lesson_video' lesson.id %}" download>{% trans "Download video" %}</a></p>
+</div>
+{% elif lesson.lesson_type == 'video' and video.kind == 'embed' %}
 <div class="video-wrapper">
     <iframe id="lesson-embed" class="video-frame" src="{{ video.embed_url }}"
             data-provider="{{ video.provider }}" data-lesson-id="{{ lesson.id }}"

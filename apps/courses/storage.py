@@ -39,6 +39,10 @@ class DatabaseUploadStorage(Storage):
     # Without @deconstructible, `makemigrations` cannot serialise a storage
     # instance into the AlterField for Lesson.pdf_file.
 
+    max_bytes = MAX_UPLOAD_BYTES
+    allowed_types = frozenset(ALLOWED_CONTENT_TYPES)
+    extensions = (".pdf",)
+
     def _open(self, name, mode="rb"):
         row = self._model().objects.get(name=name)
         return ContentFile(bytes(row.content), name=name)
@@ -48,17 +52,19 @@ class DatabaseUploadStorage(Storage):
         size = len(data)
         if size == 0:
             raise UploadNotAllowed(_msg("The uploaded file is empty."))
-        if size > MAX_UPLOAD_BYTES:
+        if size > self.max_bytes:
             raise UploadTooLarge(_msg(
                 "That file is too large. Maximum size is {limit} MB."
-            ).format(limit=MAX_UPLOAD_BYTES // (1024 * 1024)))
+            ).format(limit=self.max_bytes // (1024 * 1024)))
         ctype = (getattr(content, "content_type", "") or "").lower()
-        if ctype and ctype not in ALLOWED_CONTENT_TYPES and not name.lower().endswith(".pdf"):
-            raise UploadNotAllowed(_msg("Only PDF files can be uploaded here."))
+        lowered = name.lower()
+        if ctype and ctype not in self.allowed_types and not lowered.endswith(self.extensions):
+            raise UploadNotAllowed(_msg("Unsupported file type."))
 
         model = self._model()
         try:
-            model.objects.create(name=name, content=data, content_type=ctype or "application/pdf", size=size)
+            model.objects.create(name=name, content=data,
+                                 content_type=ctype or "application/octet-stream", size=size)
         except IntegrityError:
             # Name collision after a concurrent upload: keep the newer bytes.
             model.objects.filter(name=name).update(content=data, size=size)
@@ -91,3 +97,20 @@ class DatabaseUploadStorage(Storage):
 def _msg(text):
     from django.utils.translation import gettext as t
     return t(text)
+
+
+MAX_VIDEO_BYTES = 25 * 1024 * 1024
+VIDEO_CONTENT_TYPES = frozenset({"video/mp4", "video/webm", "video/ogg", "application/octet-stream"})
+
+
+@deconstructible
+class DatabaseVideoStorage(DatabaseUploadStorage):
+    """Video uploads, same durability trade-off as documents but a bigger cap.
+
+    Kept as a separate class (not a parameterised instance) so the migration can
+    reference it by path and the two policies cannot drift.
+    """
+
+    max_bytes = MAX_VIDEO_BYTES
+    allowed_types = VIDEO_CONTENT_TYPES
+    extensions = (".mp4", ".webm", ".ogv", ".ogg", ".mov", ".m4v")

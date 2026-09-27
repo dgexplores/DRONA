@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.db import transaction
@@ -10,6 +10,7 @@ from django.db.models import F
 import json
 import logging
 import os
+import re
 from datetime import datetime as dt, timedelta as td
 
 from apps.courses.models import (Course, Category, Module, Lesson, Enrollment, LessonProgress,
@@ -324,3 +325,70 @@ def enroll_course(request, course_id):
     else:
         messages.info(request, f"You are already enrolled in '{course.title}'.")
     return redirect('course_detail', course_id=course.id)
+
+
+def _range_response(request, data, content_type, filename):
+    """Serve stored bytes with HTTP Range support.
+
+    A <video> element asks for byte ranges to seek, and several browsers refuse
+    to play at all if the server ignores the header and replies 200. Slicing the
+    bytes here is what makes scrubbing work.
+    """
+    from django.http import StreamingHttpResponse
+    import mimetypes
+
+    total = len(data)
+    range_header = request.headers.get('Range', '')
+    ctype = content_type or mimetypes.guess_type(filename)[0] or 'application/octet-stream'
+    filename = os.path.basename(filename)
+
+    start, end = 0, total - 1
+    partial = False
+    m = re.match(r'bytes=(\d*)-(\d*)$', range_header.strip()) if range_header else None
+    if m:
+        g1, g2 = m.group(1), m.group(2)
+        if g1:
+            start = int(g1)
+            end = int(g2) if g2 else total - 1
+        elif g2:
+            # suffix range: last N bytes
+            start = max(0, total - int(g2))
+        if start >= total or start > end:
+            r = HttpResponse(status=416)
+            r['Content-Range'] = f'bytes */{total}'
+            return r
+        end = min(end, total - 1)
+        partial = True
+
+    length = end - start + 1
+    chunk_size = 256 * 1024
+
+    def stream():
+        for offset in range(start, end + 1, chunk_size):
+            yield bytes(data[offset:min(offset + chunk_size, end + 1)])
+
+    response = StreamingHttpResponse(stream(), status=206 if partial else 200,
+                                     content_type=ctype)
+    response['Content-Length'] = str(length)
+    response['Accept-Ranges'] = 'bytes'
+    if partial:
+        response['Content-Range'] = f'bytes {start}-{end}/{total}'
+    response['Content-Disposition'] = f'inline; filename="{filename}"'
+    return response
+
+
+@login_required
+def lesson_video_view(request, lesson_id):
+    """Serve an uploaded lesson video, gated on enrollment like every other asset."""
+    lesson = get_object_or_404(Lesson, id=lesson_id)
+    if not lesson.video_file:
+        raise Http404("No uploaded video for this lesson.")
+    is_manager = bool(getattr(request.user, 'is_manager', False))
+    if not is_manager and not Enrollment.objects.filter(
+        staff_user=request.user, course=lesson.module.course
+    ).exists():
+        raise Http404("Not found.")
+    row = StoredUpload.objects.filter(name=lesson.video_file.name).first()
+    if row is None:
+        raise Http404("Video file not found.")
+    return _range_response(request, bytes(row.content), row.content_type, row.name)

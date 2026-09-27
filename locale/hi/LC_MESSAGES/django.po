@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-27 22:04+0530\n"
+"POT-Creation-Date: 2026-09-27 23:44+0530\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -44,12 +44,12 @@ msgid "An account with this email already exists."
 msgstr "इस ईमेल वाला खाता पहले से मौजूद है।"
 
 #: apps/management/forms.py:85 apps/management/forms.py:111
-#: apps/management/forms.py:135
+#: apps/management/forms.py:136
 msgid "Title"
 msgstr "शीर्षक"
 
 #: apps/management/forms.py:86 apps/management/forms.py:112
-#: apps/management/forms.py:136
+#: apps/management/forms.py:137
 msgid "Title (Hindi)"
 msgstr "शीर्षक (हिन्दी)"
 
@@ -81,39 +81,50 @@ msgstr "श्रेणी चुनें"
 msgid "Leave empty to make this course available to all departments."
 msgstr "इसे खाली छोड़ें ताकि यह पाठ्यक्रम सभी विभागों के लिए उपलब्ध हो।"
 
-#: apps/management/forms.py:113 apps/management/forms.py:142
+#: apps/management/forms.py:113 apps/management/forms.py:144
 msgid "Order"
 msgstr "क्रम"
 
-#: apps/management/forms.py:137
+#: apps/management/forms.py:138
 msgid "Lesson type"
 msgstr "पाठ का प्रकार"
 
-#: apps/management/forms.py:138
+#: apps/management/forms.py:139
+msgid "Upload video"
+msgstr "वीडियो अपलोड करें"
+
+#: apps/management/forms.py:140
 msgid "Video link"
 msgstr "वीडियो लिंक"
 
-#: apps/management/forms.py:139
+#: apps/management/forms.py:141
 msgid "SOP PDF"
 msgstr "SOP पीडीएफ"
 
-#: apps/management/forms.py:140
+#: apps/management/forms.py:142
 msgid "SOP text"
 msgstr "SOP पाठ"
 
-#: apps/management/forms.py:141
+#: apps/management/forms.py:143
 msgid "Duration (minutes)"
 msgstr "अवधि (मिनट)"
 
-#: apps/management/forms.py:144
+#: apps/management/forms.py:146
 msgid "Select lesson type"
 msgstr "पाठ का प्रकार चुनें"
 
-#: apps/management/forms.py:145
+#: apps/management/forms.py:147
 msgid "Leave blank to fall back to the English title."
 msgstr "खाली छोड़ने पर अंग्रेज़ी शीर्षक दिखाया जाएगा।"
 
-#: apps/management/forms.py:147
+#: apps/management/forms.py:149
+#, python-brace-format
+msgid "Stored in the database, so it survives a redeploy. Max {limit} MB."
+msgstr ""
+"डेटाबेस में सुरक्षित, इसलिए रीडिप्लॉय के बाद भी बना रहता है। अधिकतम {limit} "
+"MB।"
+
+#: apps/management/forms.py:152
 msgid ""
 "YouTube, Vimeo, or a direct link to an .mp4 / .webm / .m3u8 file. YouTube "
 "and Vimeo links play in an embedded player."
@@ -121,11 +132,11 @@ msgstr ""
 "YouTube, Vimeo, या .mp4 / .webm / .m3u8 फ़ाइल का सीधा लिंक। YouTube और Vimeo"
 " लिंक एम्बेडेड प्लेयर में चलते हैं।"
 
-#: apps/management/forms.py:150
+#: apps/management/forms.py:155
 msgid "Used to generate AI quiz questions from this SOP."
 msgstr "इस SOP से AI क्विज़ के प्रश्न बनाने के लिए उपयोग होता है।"
 
-#: apps/management/forms.py:152
+#: apps/management/forms.py:157
 #, python-brace-format
 msgid ""
 "Stored in the database, so it survives a redeploy. Max {limit} MB, PDF only."
@@ -133,28 +144,32 @@ msgstr ""
 "डेटाबेस में सुरक्षित, इसलिए रीडिप्लॉय के बाद भी बना रहता है। अधिकतम {limit} "
 "MB, केवल PDF।"
 
-#: apps/management/forms.py:161
+#: apps/management/forms.py:166
 msgid "Only PDF files can be uploaded here."
 msgstr "यहाँ केवल PDF फ़ाइलें अपलोड की जा सकती हैं।"
 
-#: apps/management/forms.py:165
+#: apps/management/forms.py:170 apps/management/forms.py:187
 #, python-brace-format
 msgid "That file is too large. Maximum size is {limit} MB."
 msgstr "यह फ़ाइल बहुत बड़ी है। अधिकतम आकार {limit} MB है।"
 
-#: apps/management/forms.py:169
+#: apps/management/forms.py:174
 msgid "The uploaded file is empty."
 msgstr "अपलोड की गई फ़ाइल खाली है।"
 
-#: apps/management/forms.py:179
-msgid "A video link is required for video lessons."
-msgstr "वीडियो पाठ के लिए वीडियो लिंक आवश्यक है।"
+#: apps/management/forms.py:183
+msgid "Upload an MP4 or WebM video."
+msgstr "MP4 या WebM वीडियो अपलोड करें।"
 
-#: apps/management/forms.py:181
+#: apps/management/forms.py:200
+msgid "Upload a video or paste a video link for video lessons."
+msgstr "वीडियो पाठ के लिए वीडियो अपलोड करें या वीडियो लिंक चिपकाएँ।"
+
+#: apps/management/forms.py:202
 msgid "Upload a PDF or paste the SOP text for SOP PDF lessons."
 msgstr "SOP PDF पाठ के लिए PDF अपलोड करें या SOP पाठ चिपकाएँ।"
 
-#: apps/management/forms.py:188 apps/management/forms.py:208
+#: apps/management/forms.py:209 apps/management/forms.py:229
 #: templates/certificates/my_certificates.html:29
 #: templates/certificates/my_certificates.html:63
 #: templates/courses/manager_dashboard.html:88
@@ -163,7 +178,7 @@ msgstr "SOP PDF पाठ के लिए PDF अपलोड करें य�
 msgid "Course"
 msgstr "पाठ्यक्रम"
 
-#: apps/management/forms.py:193 apps/users/forms.py:37
+#: apps/management/forms.py:214 apps/users/forms.py:37
 #: templates/analytics/hr_dashboard.html:75
 #: templates/analytics/hr_dashboard.html:147
 #: templates/certificates/my_certificates.html:20
@@ -171,20 +186,20 @@ msgstr "पाठ्यक्रम"
 msgid "Department"
 msgstr "विभाग"
 
-#: apps/management/forms.py:195
+#: apps/management/forms.py:216
 msgid "All departments (all active staff)"
 msgstr "सभी विभाग (सभी सक्रिय कर्मचारी)"
 
-#: apps/management/forms.py:203 templates/analytics/hr_dashboard.html:110
+#: apps/management/forms.py:224 templates/analytics/hr_dashboard.html:110
 #: templates/courses/manager_dashboard.html:87
 msgid "Employee"
 msgstr "कर्मचारी"
 
-#: apps/management/forms.py:215
+#: apps/management/forms.py:236
 msgid "Choose ..."
 msgstr "चुनें ..."
 
-#: apps/management/forms.py:235
+#: apps/management/forms.py:256
 msgid "No linked course (optional)"
 msgstr "कोई संबद्ध पाठ्यक्रम नहीं (वैकल्पिक)"
 
@@ -443,7 +458,7 @@ msgstr "नामांकन"
 
 #: templates/analytics/hr_dashboard.html:78
 #: templates/courses/dashboard.html:25 templates/courses/dashboard.html:77
-#: templates/courses/lesson.html:70
+#: templates/courses/lesson.html:87
 #: templates/courses/manager_dashboard.html:43 templates/users/profile.html:83
 #: templates/users/profile.html:139
 msgid "Completed"
@@ -805,7 +820,7 @@ msgstr "परीक्षा"
 msgid "Complete all lessons and then take the quiz."
 msgstr "पाठ्यक्रम समाप्त करें और फिर परीक्षा दें।"
 
-#: templates/courses/course_detail.html:99 templates/courses/lesson.html:85
+#: templates/courses/course_detail.html:99 templates/courses/lesson.html:102
 msgid "Take Quiz"
 msgstr "परीक्षा दें"
 
@@ -886,35 +901,43 @@ msgstr "मॉड्यूल"
 msgid "Lesson"
 msgstr "पाठ"
 
-#: templates/courses/lesson.html:28
+#: templates/courses/lesson.html:21 templates/courses/lesson.html:45
 msgid "Your browser cannot play this video format."
 msgstr "आपका ब्राउज़र इस वीडियो प्रारूप को नहीं चला सकता।"
 
-#: templates/courses/lesson.html:30
+#: templates/courses/lesson.html:23 templates/courses/lesson.html:47
 msgid "Download video"
 msgstr "वीडियो डाउनलोड करें"
 
-#: templates/courses/lesson.html:34
+#: templates/courses/lesson.html:37
+msgid ""
+"Playback position cannot be tracked for embedded videos, so this lesson is "
+"marked complete when you open it."
+msgstr ""
+"एम्बेड किए गए वीडियो के लिए प्लेबैक स्थिति ट्रैक नहीं की जा सकती, इसलिए यह "
+"पाठ खोलते ही पूर्ण मान लिया जाता है।"
+
+#: templates/courses/lesson.html:51
 msgid "This lesson has no video attached yet. Ask your HOD to add one."
 msgstr "इस पाठ में अभी कोई वीडियो नहीं जोड़ा गया है। अपने HOD से कहें।"
 
-#: templates/courses/lesson.html:47
+#: templates/courses/lesson.html:64
 msgid "No content available for this lesson yet."
 msgstr "इस पाठ के लिए कोई सामग्री उपलब्ध नहीं है।"
 
-#: templates/courses/lesson.html:56
+#: templates/courses/lesson.html:73
 msgid "Course Progress"
 msgstr "कोर्स प्रगति"
 
-#: templates/courses/lesson.html:63
+#: templates/courses/lesson.html:80
 msgid "Minutes"
 msgstr "मिनट"
 
-#: templates/courses/lesson.html:77
+#: templates/courses/lesson.html:94
 msgid "Previous"
 msgstr "पिछला"
 
-#: templates/courses/lesson.html:83
+#: templates/courses/lesson.html:100
 #: templates/courses/training_calendar.html:14
 msgid "Next"
 msgstr "अगला"

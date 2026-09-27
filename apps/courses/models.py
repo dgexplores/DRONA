@@ -1,7 +1,7 @@
 from django.db import models
 from django.conf import settings
 from apps.users.models import Department
-from apps.courses.storage import DatabaseUploadStorage
+from apps.courses.storage import DatabaseUploadStorage, DatabaseVideoStorage
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
@@ -56,6 +56,9 @@ class Lesson(models.Model):
     video_url = models.CharField(max_length=500, blank=True)
     pdf_file = models.FileField(upload_to='sop_documents/', blank=True, null=True,
                                 storage=DatabaseUploadStorage())
+    # An uploaded video takes precedence over video_url when both are set.
+    video_file = models.FileField(upload_to='lesson_videos/', blank=True, null=True,
+                                  storage=DatabaseVideoStorage())
     sop_text = models.TextField(blank=True, help_text="Extracted text from SOP manual for AI processing")
     duration_minutes = models.PositiveIntegerField(default=10)
     order = models.PositiveIntegerField(default=1)

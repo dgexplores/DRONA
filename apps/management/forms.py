@@ -3,7 +3,7 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.users.models import StaffUser, Department
 from apps.courses.models import Category, Course, Module, Lesson, Enrollment, TrainingSession
-from apps.courses.storage import MAX_UPLOAD_BYTES
+from apps.courses.storage import MAX_UPLOAD_BYTES, MAX_VIDEO_BYTES
 
 
 def apply_labels(form, labels):
@@ -117,11 +117,12 @@ class ModuleForm(forms.ModelForm):
 class LessonForm(forms.ModelForm):
     class Meta:
         model = Lesson
-        fields = ['title', 'title_hi', 'lesson_type', 'video_url', 'pdf_file', 'sop_text', 'duration_minutes', 'order']
+        fields = ['title', 'title_hi', 'lesson_type', 'video_file', 'video_url', 'pdf_file', 'sop_text', 'duration_minutes', 'order']
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-input', 'placeholder': 'e.g. Personal Protective Equipment'}),
             'title_hi': forms.TextInput(attrs={'class': 'form-input'}),
             'lesson_type': forms.Select(attrs={'class': 'form-input'}),
+            'video_file': forms.ClearableFileInput(attrs={'class': 'form-input'}),
             'video_url': forms.URLInput(attrs={'class': 'form-input'}),
             'pdf_file': forms.ClearableFileInput(attrs={'class': 'form-input'}),
             'sop_text': forms.Textarea(attrs={'class': 'form-input', 'rows': 4}),
@@ -135,6 +136,7 @@ class LessonForm(forms.ModelForm):
             'title': _("Title"),
             'title_hi': _("Title (Hindi)"),
             'lesson_type': _("Lesson type"),
+            'video_file': _("Upload video"),
             'video_url': _("Video link"),
             'pdf_file': _("SOP PDF"),
             'sop_text': _("SOP text"),
@@ -143,6 +145,9 @@ class LessonForm(forms.ModelForm):
         })
         self.fields['lesson_type'].empty_label = _("Select lesson type")
         self.fields['title_hi'].help_text = _("Leave blank to fall back to the English title.")
+        self.fields['video_file'].help_text = _(
+            "Stored in the database, so it survives a redeploy. Max {limit} MB."
+        ).format(limit=MAX_VIDEO_BYTES // (1024 * 1024))
         self.fields['video_url'].help_text = _(
             "YouTube, Vimeo, or a direct link to an .mp4 / .webm / .m3u8 file. "
             "YouTube and Vimeo links play in an embedded player."
@@ -169,14 +174,30 @@ class LessonForm(forms.ModelForm):
             raise forms.ValidationError(_("The uploaded file is empty."))
         return pdf
 
+    def clean_video_file(self):
+        vid = self.cleaned_data.get('video_file')
+        if not vid:
+            return vid
+        name = (getattr(vid, 'name', '') or '').lower()
+        if name and not name.endswith(('.mp4', '.webm', '.mov', '.m4v', '.ogv', '.ogg')):
+            raise forms.ValidationError(_("Upload an MP4 or WebM video."))
+        size = getattr(vid, 'size', None)
+        if size is not None and size > MAX_VIDEO_BYTES:
+            raise forms.ValidationError(
+                _("That file is too large. Maximum size is {limit} MB.").format(
+                    limit=MAX_VIDEO_BYTES // (1024 * 1024))
+            )
+        return vid
+
     def clean(self):
         cleaned = super().clean()
         lesson_type = cleaned.get('lesson_type')
         video_url = cleaned.get('video_url', '')
         sop_text = cleaned.get('sop_text', '')
         existing_pdf = getattr(self.instance, 'pdf_file', None)
-        if lesson_type == 'video' and not video_url:
-            self.add_error('video_url', _("A video link is required for video lessons."))
+        existing_video = getattr(self.instance, 'video_file', None)
+        if lesson_type == 'video' and not (video_url or self.cleaned_data.get('video_file') or existing_video):
+            self.add_error('video_url', _("Upload a video or paste a video link for video lessons."))
         if lesson_type == 'pdf' and not (self.cleaned_data.get('pdf_file') or sop_text or existing_pdf):
             self.add_error('pdf_file', _("Upload a PDF or paste the SOP text for SOP PDF lessons."))
         return cleaned

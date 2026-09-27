@@ -82,6 +82,7 @@ urlpatterns = [
     path('lessons/<int:lesson_id>/', course_views.lesson_view, name='lesson_view'),
     path('lessons/<int:lesson_id>/progress/', course_views.save_lesson_progress, name='save_lesson_progress'),
     path('sop/<int:lesson_id>/', course_views.sop_document_view, name='sop_document'),
+    path('videos/<int:lesson_id>/', course_views.lesson_video_view, name='lesson_video'),
     path('training-calendar/', course_views.training_calendar, name='training_calendar'),
 
     # Quizzes & AI Generator
