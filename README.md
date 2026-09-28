@@ -29,28 +29,47 @@ There are three kinds of user. Each one sees a different set of screens.
 
 ## 🔑 Demo logins
 
-Created by `seed.py`. **The password is always the same as the Employee ID**, so `HOD_IT`
-signs in with `HOD_IT`.
+### The live site is in TESTING MODE
 
-| Role | Employee ID | Password |
-|---|---|---|
-| Super Admin | `ADMIN001` | `ADMIN001` |
-| Head of Department — IT | `HOD_IT` | `HOD_IT` |
-| Head of Department — Computer Science | `HOD_CS` | `HOD_CS` |
-| Head of Department — English | `HOD_EN` | `HOD_EN` |
-| Head of Department — Electrical | `HOD_EE` | `HOD_EE` |
-| Head of Department — Pharmacy | `HOD_PHARM` | `HOD_PHARM` |
-| Head of Department — Management | `HOD_MGMT` | `HOD_MGMT` |
-| Staff | `EMP001` … `EMP006` | `drona123` |
+> 🧪 **Every account on <https://dronav2.onrender.com> currently uses its own Employee ID as
+> its password.** This is deliberate, for testing only, and the credentials are public in
+> this README because the site has no real user data yet.
+>
+> **Re-lock before any real use:**
+> ```bash
+> python manage.py set_admin_password      # rotates the Super Admin from the env var
+> python manage.py reset_test_passwords    # resets ALL accounts to ID=password again
+> ```
+> `reset_test_passwords` is the *unsafe* direction — it exists so testing can be repeated. To
+> lock down for real, give each real user a unique password and never run it again.
+
+| Role | Employee ID | Password | Sees watch report? |
+|---|---|---|---|
+| Super Admin | `ADMIN001` | `ADMIN001` | ✅ |
+| Head of Department — IT | `HOD_IT` | `HOD_IT` | ✅ |
+| Head of Department — Computer Science | `HOD_CS` | `HOD_CS` | ✅ |
+| Head of Department — English | `HOD_EN` | `HOD_EN` | ✅ |
+| Head of Department — Electrical | `HOD_EE` | `HOD_EE` | ✅ |
+| Head of Department — Pharmacy | `HOD_PHARM` | `HOD_PHARM` | ✅ |
+| Head of Department — Management | `HOD_MGMT` | `HOD_MGMT` | ✅ |
+| Staff | `EMP001` … `EMP006`, `EMP010` | same as ID | ❌ 403 by design |
+
+Sign in at <https://dronav2.onrender.com/login/>. Then:
+
+- **Watch-progress report:** <https://dronav2.onrender.com/analytics/watch-progress/>
+- **HR dashboard:** <https://dronav2.onrender.com/analytics/>
+- **The 9-video course:** <https://dronav2.onrender.com/courses/9/>
+
+To see a staff member's view, sign in as `EMP001` / `EMP001` — the report correctly returns
+403, which is the point.
+
+### A fresh local `seed.py` is different
+
+`seed.py` creates the same IDs but gives staff `drona123`, and the HOD/Admin accounts use
+`SEED_ADMIN_PASSWORD` from the environment.
 
 > ⚠️ This repository is **public**, so these are published constants, not secrets. They are
-> what a **fresh local `seed.py`** creates. They are **not** the live site's passwords.
->
-> The public instance at <https://dronav2.onrender.com> has had **every account rotated to a
-> strong random password** — these defaults were found in the git history, so they were
-> worthless as credentials. To get access to a fresh clone, run `seed.py`. To get access to
-> the live site, ask whoever runs it.
-> See [Passwords](#-passwords-and-roles-in-detail).
+> what a **fresh local `seed.py`** creates. Do not reuse them for anything real.
 
 **Want to try it without installing anything?** Run `seed.py` locally and use the logins above.
 
@@ -250,6 +269,11 @@ off until the SMTP env vars below are set.
 - **Demo credentials below are for a fresh seed only** — production override them with strong
   passwords via env vars. Never publish a password that matches a live account.
 
+> 🧪 **Currently the live site is deliberately in TESTING MODE**, with every account's
+> password equal to its Employee ID and published in this README. That is a conscious,
+> temporary choice — see [Demo logins](#-demo-logins) — and it is the one thing on this page
+> that must be undone before real use.
+
 > ⚠️ If you ever share an admin password in a chat/log, rotate it: update the
 > `DJANGO_ADMIN_PASSWORD` env var **on Render** (Dashboard → `DRONAv2` → Environment), then
 > redeploy. The `set_admin_password` command applies it automatically on boot:
@@ -348,6 +372,13 @@ The HOD and staff passwords live only in the database, set once when the account
 silently reset a rotated production password back to the published Employee ID. The seed
 summary reports `default` or `rotated` per account by actually checking, rather than printing
 a password that may no longer be true.
+
+**One exception, on purpose:** `reset_test_passwords` *does* re-assert every password, because
+its whole job is to put the site into the TESTING MODE described in
+[Demo logins](#-demo-logins). It refuses to run without a confirmation, or `--yes` for
+non-interactive use, and prints a warning naming exactly how many accounts it is about to
+expose — including the Super Admin. It can be narrowed to one `--role` if only HOD accounts
+need resetting, which is the safer blast radius.
 
 **Migration note.** The `trainer` role was removed in `users.0004`; the tier below Super Admin
 is Head of Department. Existing `trainer` rows were converted to `hod`. The legacy `EMP010`

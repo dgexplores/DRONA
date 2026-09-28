@@ -474,3 +474,89 @@ class DatabaseConnectionTests(SimpleTestCase):
         self.assertTrue(cfg.get('CONN_HEALTH_CHECKS'),
                         'conn_health_checks must stay on for managed Postgres')
         self.assertEqual(cfg.get('CONN_MAX_AGE'), 600)
+
+
+class ResetTestPasswordsCommandTests(TestCase):
+    """TESTING-ONLY command: password == employee_id for every account."""
+
+    def setUp(self):
+        from io import StringIO
+        self.out = StringIO()
+        self.staff = StaffUser.objects.create_user(
+            employee_id="EMP910", username="emp910",
+            email="a@x.com", password="old-password-1", role="staff",
+        )
+        self.hod = StaffUser.objects.create_user(
+            employee_id="HOD_TEST", username="hodtest",
+            email="b@x.com", password="old-password-2", role="hod",
+        )
+        self.admin = StaffUser.objects.create_user(
+            employee_id="ADMIN001", username="admin001",
+            email="c@x.com", password="old-password-3", role="admin",
+        )
+
+    def _reset(self, **kw):
+        from django.core.management import call_command
+        call_command('reset_test_passwords', '--yes', stdout=self.out, **kw)
+        return self.out.getvalue()
+
+    def test_every_role_gets_its_own_id_as_password(self):
+        self._reset()
+        for user in (self.staff, self.hod, self.admin):
+            user.refresh_from_db()
+            self.assertTrue(
+                user.check_password(user.employee_id),
+                f"{user.employee_id} should authenticate with its own ID",
+            )
+
+    def test_old_passwords_stop_working(self):
+        self._reset()
+        for user in (self.staff, self.hod, self.admin):
+            user.refresh_from_db()
+            self.assertFalse(user.check_password('old-password-1'))
+            self.assertFalse(user.check_password('old-password-2'))
+            self.assertFalse(user.check_password('old-password-3'))
+
+    def test_can_limit_to_one_role(self):
+        self._reset(role='hod')
+        self.hod.refresh_from_db()
+        self.staff.refresh_from_db()
+        self.assertTrue(self.hod.check_password('HOD_TEST'))
+        self.assertFalse(self.staff.check_password('EMP910'))
+        self.assertFalse(self.admin.check_password('ADMIN001'))
+
+    def test_inactive_accounts_are_reactivated(self):
+        """A locked-out account is useless for testing; reset must open it."""
+        self.staff.is_active = False
+        self.staff.save(update_fields=['is_active'])
+        self._reset()
+        self.staff.refresh_from_db()
+        self.assertTrue(self.staff.is_active)
+
+    def test_warns_about_the_public_exposure(self):
+        self.assertIn('testing', self._reset().lower())
+
+    def test_aborts_without_confirmation(self):
+        from django.core.management import call_command
+        from django.core.management.base import CommandError
+        from unittest import mock
+        with mock.patch('builtins.input', return_value='no'):
+            with self.assertRaises(CommandError):
+                call_command('reset_test_passwords', stdout=self.out)
+        self.staff.refresh_from_db()
+        self.assertTrue(self.staff.check_password('old-password-1'))
+
+    def test_accepts_typed_confirmation(self):
+        from django.core.management import call_command
+        from unittest import mock
+        with mock.patch('builtins.input', return_value='reset'):
+            call_command('reset_test_passwords', stdout=self.out)
+        self.staff.refresh_from_db()
+        self.assertTrue(self.staff.check_password('EMP910'))
+
+    def test_no_accounts_is_an_error_not_a_silent_noop(self):
+        StaffUser.objects.all().delete()
+        from django.core.management import call_command
+        from django.core.management.base import CommandError
+        with self.assertRaises(CommandError):
+            call_command('reset_test_passwords', '--yes', stdout=self.out)
