@@ -61,9 +61,20 @@ here. Employee IDs below are public identifiers, not secrets.
 
 | Role | Employee ID | Password |
 |---|---|---|
-| Super Admin | `ADMIN001` | *(held in the Render env var)* |
+| Super Admin | `ADMIN001` | *(unique, not published)* |
 | Head of Department | `HOD_IT` `HOD_CS` `HOD_EN` `HOD_EE` `HOD_PHARM` `HOD_MGMT` | *(unique, not published)* |
 | Staff | `EMP001` … `EMP006`, `EMP010` | *(unique, not published)* |
+
+The operator's copy of the 14 passwords lives in the **macOS login keychain** (service
+`DRONA`), so the database holds only hashes and no plaintext file exists on disk:
+
+```bash
+security find-generic-password -a EMP001 -s DRONA -w     # read one password
+```
+
+`ADMIN001` is additionally pinned in the Render env var `DJANGO_ADMIN_PASSWORD`, because the
+boot command re-applies it on every deploy — env vars are write-only, so the keychain is the
+readable source of truth.
 
 > A fresh **local** `seed.py` uses published defaults (`ADMIN001`/`ADMIN001`, HOD = its own ID,
 > staff = `drona123`). Those match no live account.
@@ -113,7 +124,11 @@ Only the parts that shape decisions. Full detail in [`ENGINEERING.md`](ENGINEERI
   **write-only**, so a password manager is the source of truth for them.
 - **Admin password rotation** — the Render start command runs `manage.py boot`, which applies
   `DJANGO_ADMIN_PASSWORD` **on every deploy**. Change the env var *and* the database together, in
-  that order, or the next deploy reverts one of them.
+  that order, or the next deploy reverts one of them. Rotate it in the keychain too:
+
+  ```bash
+  security add-generic-password -U -a ADMIN001 -s DRONA -w '<new-password>'
+  ```
 - **Demo mode** — `reset_test_passwords` restores `password == employee ID` for a walkthrough.
   It requires a typed confirmation, can be narrowed with `--role`, and **republishes every
   account it touches.** Treat it as a temporary switch, never a convenience.

@@ -16,10 +16,15 @@ and you are current.
   video/PDF response, and a rate limiter whose key the client could choose. Details and
   reproductions in `README.md` § Security model.
 - `pip-audit` 17 → **0** (Django, pypdf, sqlparse, cryptography).
-- **Live credentials are no longer published.** All 14 accounts have unique generated
-  passwords; the Super Admin's is in the Render env var, rotated together with the
-  database because `boot` re-applies it on every deploy. `reset_test_passwords` is the
-  deliberate demo switch back to `password == employee ID`.
+- **Live credentials are no longer published, and no plaintext file exists.** All 14
+  accounts have unique generated 20-character passwords, stored in the **macOS login
+  keychain** under service `DRONA` (read one with
+  `security find-generic-password -a EMP001 -s DRONA -w`). The database holds only
+  Argon2 hashes. The Super Admin's password is additionally pinned in the Render env var
+  `DJANGO_ADMIN_PASSWORD`, rotated together with the database because `boot` re-applies it
+  on every deploy; env vars are write-only, so the keychain is the readable source of
+  truth. `reset_test_passwords` is the deliberate demo switch back to
+  `password == employee ID`.
 - Deliberately **not** built, written up in `ROADMAP.md`: YouTube as a primary source, and
   Google Drive links (cannot be position-tracked).
 - Email delivery still blocked on SMTP credentials — scheduler runs, mail goes to the log.
@@ -464,8 +469,9 @@ returned early, so a password change never propagated on a re-seed).
 
 Note the deliberate asymmetry: the admin password is env-driven and re-synced on every
 deploy, while staff passwords are not — re-seeding will not clobber a password a staff member
-changed through the UI. In test mode `DJANGO_ADMIN_PASSWORD` is set to the documented
-`Admin12345`; **rotate it before this is anything but a test deployment.**
+changed through the UI. On the live service `DJANGO_ADMIN_PASSWORD` is a generated secret
+held in the macOS keychain (service `DRONA`) — it is **not** a documented constant, and no
+value for it appears in this repository.
 
 
 ## Verified live: bilingual admin console (2026-09-27)
@@ -481,19 +487,24 @@ English pages carry ~0 Devanagari, Hindi pages ~230–650.
 naive "did we land on login?" check — it is authenticated, HTTP 200, and correctly
 bilingual (`Create Account` / `खाता बनाएँ`).
 
-### ⚠️ ACTION REQUIRED — production admin password is now a published constant
+### ✅ RESOLVED — production admin password was a published constant
 
-`DJANGO_ADMIN_PASSWORD` on the service was set to `Admin12345` to match the README, so the
-documented demo credential works. **This repository is public and that exact value is
-printed in the README**, so anyone can now sign in to the live admin console with it.
+**This was the reason for the `17eeb6e` lockdown, and it is now fixed.** Historical record:
 
-This is fine for a throwaway test instance and unsafe for anything else. Before this
-instance holds real data, set a strong unique value:
+`DJANGO_ADMIN_PASSWORD` on the service had been set to a value that was printed in the
+public README, so anyone could sign in to the live admin console. Fixed by:
 
-    render services update is not needed - set it in Dashboard -> DRONAv2 -> Environment,
-    or: PUT /v1/services/srv-dajkh37qj5pc73e038i0/env-vars with the new value
+1. Rotating `DJANGO_ADMIN_PASSWORD` on Render to a generated 20-character secret.
+2. Rotating all 14 account passwords in the database.
+3. Removing every credential from the README and this file.
+4. Storing the operator's copy in the macOS login keychain (service `DRONA`); the two
+   intermediate plaintext files (`/tmp/drona-creds.json`, `~/.drona/drona-creds.json`)
+   were shredded — no plaintext credential file remains on disk.
 
-`set_admin_password` runs on every boot, so saving the var plus a deploy is enough.
+Verified after the deploy: old passwords rejected, new passwords accepted for admin, HOD
+and staff, with correct role authorization (staff → 403 on manager reports).
+
+`set_admin_password` runs on every boot, so saving the env var plus a deploy is enough.
 
 Note the operational lesson: an env-var change is applied by a **deploy**, not by
 `restart`. A restart ran `boot` and logged "ADMIN001 password rotated." while still using
@@ -518,6 +529,8 @@ Per the owner's instruction — "keep below him HODs only no trainer".
   EE, PHARM and MGMT were **added**; the pre-existing support departments (LIB, MEC,
   ADM, FAC, HCS) were left in place so current staff keep a valid department.
 - Admin: `ADMIN001` / `ADMIN001` — **fresh local seed only; this matches no live account.**
+  The live `ADMIN001` password is a generated secret, held in the keychain (service
+  `DRONA`) and pinned in the `DJANGO_ADMIN_PASSWORD` env var.
 
 Operational note: `set_admin_password` runs on every boot and overwrites whatever the seed
 writes, from `DJANGO_ADMIN_PASSWORD`. **That is why the lockdown had to change the env var and
