@@ -4,12 +4,25 @@
 context. If you are a teammate or a fresh session, read this file plus `ENGINEERING.md`
 and you are current.
 
-**Last updated:** 2026-09-23 (session 6 — backlog drain: fast boot, triple keep-alive, stable Gemini pin, scheduler on, venv 3.12, media purge; email delivery still blocked on SMTP creds)
+**Last updated:** 2026-09-28
 
-**Later sessions:** uploaded lesson videos + HTTP Range serving (`00963f5`), and the 9-clip
-"Workplace Communication & Conduct" course live with all 7 staff enrolled. Deliberately
-**not** built, now written up in `ROADMAP.md`: the per-employee watch-progress report,
-YouTube as a primary source, and Google Drive links (cannot be position-tracked).
+**Session history since then:**
+- Uploaded lesson videos + HTTP Range serving (`00963f5`); the 9-clip "Workplace
+  Communication & Conduct" course is live with all 7 staff enrolled.
+- Per-employee **watch-progress report** built and live at `/analytics/watch-progress/`
+  with CSV export — read from the watch time the player already records.
+- Three real vulnerabilities found by testing each control against its attacker, all fixed:
+  stored XSS via Content-Type confusion on uploads, security headers absent on every
+  video/PDF response, and a rate limiter whose key the client could choose. Details and
+  reproductions in `README.md` § Security model.
+- `pip-audit` 17 → **0** (Django, pypdf, sqlparse, cryptography).
+- **Live credentials are no longer published.** All 14 accounts have unique generated
+  passwords; the Super Admin's is in the Render env var, rotated together with the
+  database because `boot` re-applies it on every deploy. `reset_test_passwords` is the
+  deliberate demo switch back to `password == employee ID`.
+- Deliberately **not** built, written up in `ROADMAP.md`: YouTube as a primary source, and
+  Google Drive links (cannot be position-tracked).
+- Email delivery still blocked on SMTP credentials — scheduler runs, mail goes to the log.
 
 ---
 
@@ -500,12 +513,13 @@ Per the owner's instruction — "keep below him HODs only no trainer".
 - Legacy demo HOD `EMP010` (designation "HOD, Computer & IT Lab") is **demoted to
   `staff`, not deleted**, so its enrollments / certificates / quiz attempts keep their
   foreign keys. It is excluded from the reverse migration. Delete it when convenient.
-- New accounts, one HOD per academic department, password = employee ID:
+- New accounts (fresh local `seed.py` only), one HOD per academic department, password = employee ID:
   `HOD_IT`, `HOD_CS`, `HOD_EN`, `HOD_EE`, `HOD_PHARM`, `HOD_MGMT`. Departments CS, EN,
   EE, PHARM and MGMT were **added**; the pre-existing support departments (LIB, MEC,
   ADM, FAC, HCS) were left in place so current staff keep a valid department.
-- Admin: `ADMIN001` / `ADMIN001`.
+- Admin: `ADMIN001` / `ADMIN001` — **fresh local seed only; this matches no live account.**
 
-Operational note: `DJANGO_ADMIN_PASSWORD` **must** be set to `ADMIN001` on the service.
-`set_admin_password` runs on every boot and overwrites whatever the seed writes, so
-leaving it at the old value silently reverts the admin password on the next deploy.
+Operational note: `set_admin_password` runs on every boot and overwrites whatever the seed
+writes, from `DJANGO_ADMIN_PASSWORD`. **That is why the lockdown had to change the env var and
+the database together** — changing only the database reverts on the next deploy. The value is
+a Render secret and is write-only, so it cannot be read back; keep it in a password manager.

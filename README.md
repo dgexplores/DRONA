@@ -17,7 +17,7 @@ pip install -r requirements.txt
 ```
 
 Full walkthrough with screenshots-free detail: [Quick Start](#-quick-start-local--step-by-step) ·
-Logins: [Demo logins](#-demo-logins) · Deployment: [Production deployment](#-production-deployment-on-render-backend--the-live-target)
+Logins: [Sign-in](#-sign-in) · Deployment: [Production deployment](#-production-deployment-on-render-backend--the-live-target)
 
 | | |
 |---|---|
@@ -52,49 +52,66 @@ There are three kinds of user. Each one sees a different set of screens.
 
 ---
 
-## 🔑 Demo logins
+## 🔑 Sign-in
 
-### The live site is in TESTING MODE
+### The live site is LOCKED DOWN
 
-> 🧪 **Every account on <https://dronav2.onrender.com> currently uses its own Employee ID as
-> its password.** This is deliberate, for testing only, and the credentials are public in
-> this README because the site has no real user data yet.
+> 🔒 **No live credentials appear in this repository, and none should ever be added.**
 >
-> **Re-lock before any real use:**
-> ```bash
-> python manage.py set_admin_password      # rotates the Super Admin from the env var
-> python manage.py reset_test_passwords    # resets ALL accounts to ID=password again
-> ```
-> `reset_test_passwords` is the *unsafe* direction — it exists so testing can be repeated. To
-> lock down for real, give each real user a unique password and never run it again.
+> Each of the 14 accounts has its own generated 20-character password, and the Super Admin's is
+> held in the Render env var (`DJANGO_ADMIN_PASSWORD`) so a deploy cannot revert it. The
+> Employee IDs below are **public on purpose** — they are identifiers, not secrets. The
+> passwords are not published anywhere.
 
 | Role | Employee ID | Password | Sees watch report? |
 |---|---|---|---|
-| Super Admin | `ADMIN001` | `ADMIN001` | ✅ |
-| Head of Department — IT | `HOD_IT` | `HOD_IT` | ✅ |
-| Head of Department — Computer Science | `HOD_CS` | `HOD_CS` | ✅ |
-| Head of Department — English | `HOD_EN` | `HOD_EN` | ✅ |
-| Head of Department — Electrical | `HOD_EE` | `HOD_EE` | ✅ |
-| Head of Department — Pharmacy | `HOD_PHARM` | `HOD_PHARM` | ✅ |
-| Head of Department — Management | `HOD_MGMT` | `HOD_MGMT` | ✅ |
-| Staff | `EMP001` … `EMP006`, `EMP010` | same as ID | ❌ 403 by design |
+| Super Admin | `ADMIN001` | *(held in Render env var)* | ✅ |
+| Head of Department — IT | `HOD_IT` | *(unique, not published)* | ✅ |
+| Head of Department — Computer Science | `HOD_CS` | *(unique, not published)* | ✅ |
+| Head of Department — English | `HOD_EN` | *(unique, not published)* | ✅ |
+| Head of Department — Electrical | `HOD_EE` | *(unique, not published)* | ✅ |
+| Head of Department — Pharmacy | `HOD_PHARM` | *(unique, not published)* | ✅ |
+| Head of Department — Management | `HOD_MGMT` | *(unique, not published)* | ✅ |
+| Staff | `EMP001` … `EMP006`, `EMP010` | *(unique, not published)* | ❌ 403 by design |
 
 Sign in at <https://dronav2.onrender.com/login/>. Then:
 
 - **Watch-progress report:** <https://dronav2.onrender.com/analytics/watch-progress/>
-- **HR dashboard:** <https://dronav2.onrender.com/analytics/>
+- **HR dashboard:** <https://dronav2.onrender.com/analytics>
 - **The 9-video course:** <https://dronav2.onrender.com/courses/9/>
 
-To see a staff member's view, sign in as `EMP001` / `EMP001` — the report correctly returns
-403, which is the point.
+#### Running a demo again
 
-### A fresh local `seed.py` is different
+If you need every role back for a walkthrough, `reset_test_passwords` puts the site back into
+`password == employee ID` mode:
 
-`seed.py` creates the same IDs but gives staff `drona123`, and the HOD/Admin accounts use
-`SEED_ADMIN_PASSWORD` from the environment.
+```bash
+./venv/bin/python manage.py reset_test_passwords --role hod   # narrow: one role
+./venv/bin/python manage.py reset_test_passwords              # all 14 accounts
+```
+
+It prints a warning naming how many accounts it is about to expose, and refuses to run
+without a typed `reset` (or `--yes`). **Doing this re-publishes every account to anyone who
+reads this file**, so treat it as a temporary demo switch, not a convenience. Re-lock by
+rotating the passwords and the env var afterwards.
+
+> ⚠️ Order matters for the Super Admin. `manage.py boot` runs `set_admin_password` on **every**
+> deploy, so `DJANGO_ADMIN_PASSWORD` must be changed on Render at the same time, or the next
+> deploy puts the old value back.
+
+### A fresh local clone
+
+`seed.py` creates demo accounts with **published** defaults, which is fine locally because
+nothing is deployed:
+
+| Role | Employee ID | Password |
+|---|---|---|
+| Super Admin | `ADMIN001` | `ADMIN001` |
+| HOD | `HOD_IT`, `HOD_CS`, `HOD_EN`, `HOD_EE`, `HOD_PHARM`, `HOD_MGMT` | same as the ID |
+| Staff | `EMP001` … `EMP006` | `drona123` |
 
 > ⚠️ This repository is **public**, so these are published constants, not secrets. They are
-> what a **fresh local `seed.py`** creates. Do not reuse them for anything real.
+> exactly what a fresh `seed.py` creates and they match **no** live account.
 
 **Want to try it without installing anything?** Run `seed.py` locally and use the logins above.
 
@@ -103,7 +120,7 @@ To see a staff member's view, sign in as `EMP001` / `EMP001` — the report corr
 ## 📖 Contents
 
 **Start here**
-- [👥 Who uses it](#-who-uses-it) · [🔑 Demo logins](#-demo-logins) · [🚀 Quick Start (Local)](#-quick-start-local--step-by-step)
+- [👥 Who uses it](#-who-uses-it) · [🔑 Sign-in](#-sign-in) · [🚀 Quick Start (Local)](#-quick-start-local--step-by-step)
 - [🧭 Authentication & approval flow](#-authentication--approval-flow)
 
 **Using the app**
@@ -301,10 +318,9 @@ off until the SMTP env vars below are set.
 - **Demo credentials below are for a fresh seed only** — production override them with strong
   passwords via env vars. Never publish a password that matches a live account.
 
-> 🧪 **Currently the live site is deliberately in TESTING MODE**, with every account's
-> password equal to its Employee ID and published in this README. That is a conscious,
-> temporary choice — see [Demo logins](#-demo-logins) — and it is the one thing on this page
-> that must be undone before real use.
+> 🔒 **The live site is locked down.** Every account has its own generated password, none are
+> published in this repository, and the Super Admin's is held in the Render env var so a deploy
+> cannot revert it. See [Sign-in](#-sign-in) for the demo switch if you need one back.
 
 ### Bugs found by testing a control against its attacker
 
@@ -430,7 +446,7 @@ Open **http://127.0.0.1:8000/** in your browser.
 
 ### 🔐 Passwords and roles, in detail
 
-The login table is [near the top of this file](#-demo-logins). This part is only about *why* it
+The login table is [near the top of this file](#-sign-in). This part is only about *why* it
 works that way.
 
 **One env var owns the admin password.** Both `seed.py` and the `set_admin_password`
@@ -445,8 +461,9 @@ production admin password: set the env var, then **deploy**. A plain restart is 
 it re-runs the command with the previous value.
 
 > ⚠️ The same boot hook means `reset_test_passwords` is **not** durable for `ADMIN001` on its
-> own — the very next deploy overwrites it from `DJANGO_ADMIN_PASSWORD`. During TESTING MODE
-> both are set to the same dummy value so they agree. Anywhere else, set the env var first.
+> own — the very next deploy overwrites it from `DJANGO_ADMIN_PASSWORD`. That is why the
+> lockdown rotated the env var and the database together. Anywhere else, change both, in that
+> order.
 
 The HOD and staff passwords live only in the database, set once when the account is created.
 `seed.py` deliberately does **not** re-assert them on a later run — otherwise re-seeding would
@@ -455,11 +472,10 @@ summary reports `default` or `rotated` per account by actually checking, rather 
 a password that may no longer be true.
 
 **One exception, on purpose:** `reset_test_passwords` *does* re-assert every password, because
-its whole job is to put the site into the TESTING MODE described in
-[Demo logins](#-demo-logins). It refuses to run without a confirmation, or `--yes` for
-non-interactive use, and prints a warning naming exactly how many accounts it is about to
-expose — including the Super Admin. It can be narrowed to one `--role` if only HOD accounts
-need resetting, which is the safer blast radius.
+its whole job is the demo mode described in [Sign-in](#-sign-in). It refuses to run without a
+confirmation, or `--yes` for non-interactive use, and prints a warning naming exactly how many
+accounts it is about to expose — including the Super Admin. It can be narrowed to one `--role`,
+which is the safer blast radius.
 
 **Migration note.** The `trainer` role was removed in `users.0004`; the tier below Super Admin
 is Head of Department. Existing `trainer` rows were converted to `hod`. The legacy `EMP010`
