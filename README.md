@@ -108,9 +108,14 @@ signs in with `HOD_IT`.
 - **QR-verifiable certificates** — ReportLab renders the PDF; the QR code resolves to a public
   `/verify/<id>/` page that confirms authenticity while masking the holder's surname.
 - **HR analytics dashboard** — Chart.js visualizations + **CSV export**.
+- **Watch-progress report** (`/analytics/watch-progress/`) — per-employee × per-lesson watch
+  time, so "did they finish part 3?" has an answer. Shows what each person actually watched
+  out of each lesson's duration, flags **not started** and **fell behind** (started, unfinished,
+  no activity for 7 days), and exports the same grid to CSV. Reads the watch time the player
+  has always been recording, so nothing new is tracked to produce it.
 - **Bilingual UI (English / हिन्दी)** — the whole interface is translated: navigation, buttons,
   form labels, validation messages, email subjects, the management console and every error page.
-  349 catalogued strings. Content (course/module/lesson/quiz titles and descriptions) is
+  400 catalogued strings. Content (course/module/lesson/quiz titles and descriptions) is
   bilingual via `_hi` model fields and switches with the UI. See
   [Localisation](#-localisation--adding-or-changing-a-translation).
 - **PWA** — manifest + service worker, installable to home screen, works as an app.
