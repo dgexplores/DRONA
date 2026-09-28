@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Watch Progress | SRMS DRONA" %}{% endblock %}
+
+{% block content %}
+<div class="page-title">⏱️ {% trans "Watch Progress" %}</div>
+<p class="page-subtitle">
+    {% trans "How much each employee has actually watched, per lesson." %}
+</p>
+
+{% if not courses %}
+    <div class="alert alert-warning">
+        {% trans "No course has any enrolled staff yet, so there is nothing to report." %}
+    </div>
+{% else %}
+
+<div class="card" style="margin-bottom:1.5rem;">
+    <form method="get" style="display:flex;gap:0.75rem;align-items:flex-end;flex-wrap:wrap;">
+        <div style="flex:1;min-width:260px;">
+            <label for="course" style="display:block;margin-bottom:0.35rem;font-weight:600;">{% trans "Course" %}</label>
+            <select name="course" id="course"
+                    onchange="this.form.submit()"
+                    style="width:100%;padding:0.5rem;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);">
+                {% for c in courses %}
+                    <option value="{{ c.id }}" {% if course and c.id == course.id %}selected{% endif %}>
+                        {{ c.title }}{% if c.title_hi %} — {{ c.title_hi }}{% endif %}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <noscript><button type="submit" class="btn btn-primary">{% trans "Show" %}</button></noscript>
+    </form>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card reveal">
+        <div class="stat-icon blue">👥</div>
+        <div>
+            <div class="stat-value" data-count="{{ rows|length }}">{{ rows|length }}</div>
+            <div class="stat-label">{% trans "Enrolled" %}</div>
+        </div>
+    </div>
+    <div class="stat-card reveal">
+        <div class="stat-icon violet">▶️</div>
+        <div>
+            <div class="stat-value" data-count="{{ lessons|length }}">{{ lessons|length }}</div>
+            <div class="stat-label">{% trans "Tracked Lessons" %}</div>
+        </div>
+    </div>
+    <div class="stat-card reveal">
+        <div class="stat-icon gold">⏳</div>
+        <div>
+            <div class="stat-value" data-count="{{ not_started|length }}">{{ not_started|length }}</div>
+            <div class="stat-label">{% trans "Not Started" %}</div>
+        </div>
+    </div>
+    <div class="stat-card reveal">
+        <div class="stat-icon crimson">📉</div>
+        <div>
+            <div class="stat-value" data-count="{{ fell_behind|length }}">{{ fell_behind|length }}</div>
+            <div class="stat-label">{% trans "Fell Behind" %}</div>
+        </div>
+    </div>
+</div>
+
+{% if not lessons %}
+    <div class="alert alert-info">
+        {% blocktrans with n=other_total %}This course has {{ n }} lesson{{ n|pluralize }}, but none of them is a
+        video with a duration set, so there is no watch time to report. Set a duration on a
+        video lesson and its watch progress will appear here.{% endblocktrans %}
+    </div>
+{% else %}
+
+<div class="card" style="padding:1rem 0;overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;min-width:{{ lessons|length }}ch;">
+        <thead>
+            <tr>
+                <th style="text-align:left;position:sticky;left:0;background:var(--surface);">{% trans "Employee" %}</th>
+                <th>{% trans "Total Watched" %}</th>
+                {% for lesson in lessons %}
+                    <th title="{{ lesson.title }}">
+                        {{ lesson.module.order }}.{{ lesson.order }}<br>
+                        <span style="font-weight:400;opacity:0.75;">{{ lesson.title|truncatechars:18 }}</span>
+                    </th>
+                {% endfor %}
+                {% if other_total %}
+                    <th>{% trans "Other" %}</th>
+                {% endif %}
+                <th>{% trans "Status" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in rows %}
+            <tr>
+                <td style="text-align:left;position:sticky;left:0;background:var(--surface);">
+                    <strong>{{ r.enrollment.staff_user.employee_id }}</strong><br>
+                    <span style="opacity:0.75;font-size:0.85em;">{{ r.enrollment.staff_user.get_full_name }}</span>
+                    {% if r.enrollment.staff_user.department %}
+                        <br><span style="opacity:0.6;font-size:0.8em;">{{ r.enrollment.staff_user.department.name }}</span>
+                    {% endif %}
+                </td>
+                <td><strong>{{ r.total_watched_display }}</strong></td>
+                {% for c in r.cells %}
+                    <td>
+                        {% if c.completed %}
+                            <span title="{% trans 'Completed' %}" style="color:var(--success);font-weight:700;">✓</span>
+                            <br><span style="font-size:0.8em;opacity:0.7;">{{ c.percent }}%</span>
+                        {% elif c.watched %}
+                            <div class="progress-bar" style="max-width:90px;margin:0 auto;">
+                                <div class="progress-fill" style="width:{{ c.percent }}%"></div>
+                            </div>
+                            <span style="font-size:0.8em;opacity:0.7;">{{ c.watched_display }}</span>
+                        {% else %}
+                            <span style="opacity:0.35;">—</span>
+                        {% endif %}
+                    </td>
+                {% endfor %}
+                {% if other_total %}
+                    <td>{{ r.other_completed }}/{{ other_total }}</td>
+                {% endif %}
+                <td>
+                    {% if r.completed %}
+                        <span style="color:var(--success);font-weight:600;">{% trans "Completed" %}</span>
+                    {% elif not r.started %}
+                        <span style="opacity:0.7;">{% trans "Not started" %}</span>
+                    {% else %}
+                        <span style="color:var(--warning);">{% trans "In progress" %}</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="9" style="text-align:center;padding:1.5rem;opacity:0.7;">{% trans "No enrollments for this course." %}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="card" style="margin-top:1.5rem;">
+    <h3 style="margin-top:0;">{% trans "Needs follow-up" %}</h3>
+
+    <h4 style="margin-bottom:0.5rem;">{% trans "Not started" %} ({{ not_started|length }})</h4>
+    {% if not_started %}
+        <p style="opacity:0.85;">{% trans "Enrolled but no watch time recorded at all." %}</p>
+        <p style="margin:0;">
+            {% for r in not_started %}
+                <span class="badge" style="display:inline-block;margin:0.15rem;">{{ r.enrollment.staff_user.employee_id }}</span>
+            {% endfor %}
+        </p>
+    {% else %}
+        <p style="opacity:0.7;margin:0;">{% trans "Everyone has started." %}</p>
+    {% endif %}
+
+    <h4 style="margin:1.25rem 0 0.5rem;">
+        {% trans "Fell behind" %} — {% blocktrans with n=stale_days %}{{ n }} days without activity{% endblocktrans %}
+    </h4>
+    {% if fell_behind %}
+        <p style="opacity:0.85;">{% trans "Started but not finished, with no recent activity." %}</p>
+        <p style="margin:0;">
+            {% for r in fell_behind %}
+                <span class="badge" style="display:inline-block;margin:0.15rem;">{{ r.enrollment.staff_user.employee_id }}</span>
+            {% endfor %}
+        </p>
+    {% else %}
+        <p style="opacity:0.7;margin:0;">{% trans "Nobody has stalled." %}</p>
+    {% endif %}
+
+    <p style="margin:1.25rem 0 0;">
+        <a class="btn btn-primary" href="{% url 'export_watch_progress_csv' %}?course={{ course.id }}">
+            {% trans "Download CSV" %}
+        </a>
+    </p>
+</div>
+
+{% endif %}
+{% endif %}
+{% endblock %}

@@ -98,6 +98,8 @@ urlpatterns = [
     # Analytics & HR Dashboard
     path('analytics/', analytics_views.hr_dashboard_view, name='hr_dashboard'),
     path('analytics/export/csv/', analytics_views.export_staff_report_csv, name='export_staff_csv'),
+    path('analytics/watch-progress/', analytics_views.watch_progress_view, name='watch_progress'),
+    path('analytics/watch-progress/export/csv/', analytics_views.export_watch_progress_csv, name='export_watch_progress_csv'),
 
     # Management Console (admin/trainer)
     path('manage/', include('apps.management.urls')),

@@ -9,7 +9,8 @@ Last updated: 2026-09-27 · live commit at time of writing: `00963f5`
 
 ## 1. Watch-progress report — *"who watched how much"*
 
-**Status:** data collection is **already live**; the reporting screen is not built.
+**Status:** ✅ **built and live** (2026-09-27) at `/analytics/watch-progress/`, with CSV export
+at `/analytics/watch-progress/export/csv/`. Reached from the HR dashboard.
 
 ### What already exists
 
@@ -39,16 +40,16 @@ a PDF cannot auto-complete on zero watch time.
 
 Unit-tested in `apps/courses/tests.py::LessonProgressWatchTests`.
 
-### The gap
+### The gap that existed
 
-`watched_seconds` is written to the database and **displayed nowhere**. The HR dashboard
-(`templates/analytics/hr_dashboard.html`) only shows department-level completion rates, and
-the CSV export is the same shape. There is currently no way to ask "did Raju finish part 3?"
+`watched_seconds` was written to the database and **displayed nowhere**. The HR dashboard only
+showed department-level completion rates, and the CSV export was the same shape. There was no
+way to ask "did Raju finish part 3?"
 
-### What to build
+### What was built
 
-A per-employee × per-lesson grid, readable at a glance, with the existing role gate
-(HOD sees their department, Super Admin sees everything):
+A per-employee × per-lesson grid, readable at a glance, behind the existing
+`is_manager` gate (HOD or Super Admin), with a course selector:
 
 | Employee | Lesson | Watched | Last position | Status |
 |---|---|---|---|---|
@@ -56,19 +57,34 @@ A per-employee × per-lesson grid, readable at a glance, with the existing role 
 | EMP002 | Everyday English Pt 1 | 2m 03s / 10m | 2:03 | 20 % |
 | EMP003 | Workplace Etiquette Pt 1 | not started | 0:00 | — |
 
-Plus two roll-ups that HR actually asks for:
+Plus the two roll-ups HR actually acts on:
 
 - **not started** — enrolled, zero watch time
-- **fell behind** — started, did not complete, no activity in N days
+- **fell behind** — started, not finished, and no activity for 7 days
+  (`STALE_AFTER_DAYS` in `apps/analytics/views.py`)
 
-And a CSV export to match `apps/analytics/views.py:export_staff_report_csv`.
+And a CSV export, one column pair per lesson, produced by the **same** helper the report uses
+(`_watch_progress_rows`) so the screen and the export can never disagree.
+
+Lessons that cannot be watch-verified (PDF SOPs, or a video with no duration) are **not**
+grid columns — they would be meaningless. They collapse into a single "other" done/total
+column instead. If a course has no watchable lesson at all, the page says so rather than
+rendering an empty grid.
 
 ### Design notes worth keeping
 
 - Read from `LessonProgress`, never recompute from the UI.
-- `watched_seconds` is capped at lesson duration — a percentage is safe to display directly.
-- Bilingual, like everything else: the report needs `{% trans %}` labels and catalog entries.
-  Do not ship it in English only.
+- `watched_seconds` is capped at lesson duration — a percentage is safe to display directly,
+  and the report clamps anyway rather than relying on that alone.
+- Bilingual: the report is fully translated (400 messages, 0 fuzzy, 0 untranslated).
+
+### Known limitation — not fixed
+
+**Any manager sees every department.** The gate is the existing `is_manager` check, matching
+`hr_dashboard_view`, so an HOD can view other departments' watch data. The roadmap originally
+promised HOD scoping; it was not implemented, because scoping *only* this screen would create
+a misleading half-applied privacy model while the existing HR dashboard still lists everyone.
+If department scoping is wanted, do it across the analytics views in one change, not here.
 
 ---
 
