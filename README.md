@@ -66,7 +66,8 @@ here. Employee IDs below are public identifiers, not secrets.
 | Staff | `EMP001` … `EMP006`, `EMP010` | *(unique, not published)* |
 
 The operator's copy of the 14 passwords lives in the **macOS login keychain** (service
-`DRONA`), so the database holds only hashes and no plaintext file exists on disk:
+`DRONA`), so the database holds only Argon2 hashes and no plaintext credential file exists on
+disk:
 
 ```bash
 security find-generic-password -a EMP001 -s DRONA -w     # read one password
@@ -76,8 +77,14 @@ security find-generic-password -a EMP001 -s DRONA -w     # read one password
 boot command re-applies it on every deploy — env vars are write-only, so the keychain is the
 readable source of truth.
 
+> ⚠️ **The keychain is the only copy.** Neither the database (Argon2 hashes) nor the env var
+> (write-only) can produce a password back. If the keychain is lost, all 14 are gone and must be
+> re-issued — see [Rotating any other account](#operating-it). Keep iCloud Keychain sync on if you
+> want a second copy.
+
 > A fresh **local** `seed.py` uses published defaults (`ADMIN001`/`ADMIN001`, HOD = its own ID,
-> staff = `drona123`). Those match no live account.
+> staff = `drona123`). Those match no live account — they are a first-run convenience, and this
+> repository is public, so treat them as constants that must never be deployed.
 
 **Walkthrough paths**
 
@@ -120,8 +127,8 @@ Only the parts that shape decisions. Full detail in [`ENGINEERING.md`](ENGINEERI
 - **Planned work** — [`ROADMAP.md`](ROADMAP.md): YouTube-hosted lessons, why Google Drive links
   cannot be position-tracked, when video should leave the database. Agreed, deliberately unbuilt.
 - **Render service** — `srv-dajkh37qj5pc73e038i0`, Blueprint `exs-daq0qoek1f9s73dhte70`.
-  Config in [`render.yaml`](render.yaml); secrets live only in Render env vars and are
-  **write-only**, so a password manager is the source of truth for them.
+  Config in [`render.yaml`](render.yaml). Secrets live only in Render env vars, which are
+  **write-only** — the keychain is the source of truth for anything that has to be re-readable.
 - **Admin password rotation** — the Render start command runs `manage.py boot`, which applies
   `DJANGO_ADMIN_PASSWORD` **on every deploy**. Change the env var *and* the database together, in
   that order, or the next deploy reverts one of them. Rotate it in the keychain too:
@@ -129,9 +136,20 @@ Only the parts that shape decisions. Full detail in [`ENGINEERING.md`](ENGINEERI
   ```bash
   security add-generic-password -U -a ADMIN001 -s DRONA -w '<new-password>'
   ```
+- **Rotating any other account** — no env var involved, so the database is the only writer:
+
+  ```bash
+  ./venv/bin/python manage.py changepassword EMP003      # interactive, prompts twice
+  security add-generic-password -U -a EMP003 -s DRONA -w '<new-password>'
+  ```
+
+  Order does not matter off Render; on Render, use `manage.py boot` semantics and rotate the
+  env var first if the account is `ADMIN001`.
 - **Demo mode** — `reset_test_passwords` restores `password == employee ID` for a walkthrough.
-  It requires a typed confirmation, can be narrowed with `--role`, and **republishes every
-  account it touches.** Treat it as a temporary switch, never a convenience.
+  It requires a typed confirmation (or `--yes`), can be narrowed with `--role`, and
+  **republishes every account it touches.** Treat it as a temporary switch, never a convenience.
+  To re-lock afterwards, rotate each account's password and its keychain entry; a repo that once
+  carried live credentials is public forever, so a rotate-and-verify is the only real fix.
 - **CI/CD** — GitHub Actions runs the Django check, a missing-migration check, the full 203-test
   suite, `collectstatic` and `compileall` on every push and PR. Backend deploys to Render on push
   to `main`; a 5-minute cron pings `/health/` so the free instance stays warm.
