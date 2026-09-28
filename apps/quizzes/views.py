@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from apps.courses.access import can_view_course
 from apps.courses.models import Course, Module, Enrollment
 from apps.quizzes.models import Quiz, Question, Choice, QuizAttempt
 from apps.certificates.pdf_builder import generate_certificate_pdf
@@ -10,9 +11,7 @@ from apps.quizzes.gemini_services import generate_quiz_from_text
 def take_quiz_view(request, course_id):
     course = get_object_or_404(Course, id=course_id)
     # Learners must be enrolled; managers may preview any course.
-    if not request.user.is_manager and not Enrollment.objects.filter(
-        staff_user=request.user, course=course
-    ).exists():
+    if not can_view_course(request.user, course):
         messages.error(request, "You are not enrolled in this course.")
         return redirect('dashboard')
     quiz = Quiz.objects.filter(course=course).first()
@@ -41,9 +40,7 @@ def submit_quiz_view(request, quiz_id):
     course = quiz.course or (quiz.module.course if quiz.module else None)
 
     # Same gate as take_quiz_view: submitting used to auto-enroll the caller.
-    if course and not request.user.is_manager and not Enrollment.objects.filter(
-        staff_user=request.user, course=course
-    ).exists():
+    if not can_view_course(request.user, course):
         messages.error(request, "You are not enrolled in this course.")
         return redirect('dashboard')
 
@@ -108,7 +105,7 @@ def generate_ai_quiz(request):
     """
     Admin / HOD view to trigger Gemini AI Quiz generation from text/PDF SOP.
     """
-    if not bool(getattr(request.user, 'is_manager', False)):
+    if not request.user.is_manager:
         messages.error(request, "Permission denied. Only HODs and administrators can generate AI quizzes.")
         return redirect('dashboard')
 

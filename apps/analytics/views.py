@@ -134,7 +134,7 @@ def _reportable_courses():
 
 @login_required
 def watch_progress_view(request):
-    if not bool(getattr(request.user, 'is_manager', False)):
+    if not request.user.is_manager:
         return render(request, 'errors/403.html', status=403)
 
     courses = list(_reportable_courses())
@@ -167,7 +167,7 @@ def watch_progress_view(request):
 
 @login_required
 def export_watch_progress_csv(request):
-    if not bool(getattr(request.user, 'is_manager', False)):
+    if not request.user.is_manager:
         return render(request, 'errors/403.html', status=403)
 
     courses = list(_reportable_courses())
@@ -215,7 +215,7 @@ def export_watch_progress_csv(request):
 
 @login_required
 def hr_dashboard_view(request):
-    if not bool(getattr(request.user, 'is_manager', False)):
+    if not request.user.is_manager:
         messages.error(request, _("Access restricted to HODs and HR Administrators."))
         return redirect('dashboard')
 
@@ -271,7 +271,7 @@ def hr_dashboard_view(request):
 
 @login_required
 def export_staff_report_csv(request):
-    if not bool(getattr(request.user, 'is_manager', False)):
+    if not request.user.is_manager:
         return render(request, 'errors/403.html', status=403)
 
     # Streaming + annotated counts: avoids loading all rows and N+1 per-row counts.

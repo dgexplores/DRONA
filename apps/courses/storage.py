@@ -18,6 +18,7 @@ pushed through memory on each read. Video stays link-based (YouTube/Vimeo/direct
 CDN URL), which is the better design at this scale regardless.
 """
 from django.core.files.base import ContentFile
+from django.utils.translation import gettext as _msg
 from django.core.files.storage import Storage
 from django.db import IntegrityError
 from django.utils.deconstruct import deconstructible
@@ -92,11 +93,6 @@ class DatabaseUploadStorage(Storage):
     def _model(self):
         from apps.courses.models import StoredUpload
         return StoredUpload
-
-
-def _msg(text):
-    from django.utils.translation import gettext as t
-    return t(text)
 
 
 MAX_VIDEO_BYTES = 25 * 1024 * 1024

@@ -63,13 +63,8 @@ def _random_password(length=12):
     return ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(length))
 
 
-def _can_manage(user):
-    # Central RBAC: StaffUser.is_manager covers hod/admin/staff/superuser.
-    return bool(getattr(user, 'is_manager', False))
-
-
 def _require_manager(request):
-    if not _can_manage(request.user):
+    if not request.user.is_manager:
         messages.error(request, _("Access restricted to administrators and HODs."))
         return redirect('dashboard')
     return None

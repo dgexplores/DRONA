@@ -11,14 +11,11 @@ from apps.certificates.pdf_builder import generate_certificate_pdf
 from apps.users.models import Department
 from apps.courses.models import Course
 
-def _is_manager(user):
-    return bool(getattr(user, 'is_manager', False))
-
 @login_required
 def my_certificates_view(request):
     # Super-admin / HR / HOD: role-aware directory of who earned which certificate,
     # with search + filters. Regular staff only see their own.
-    if _is_manager(request.user):
+    if request.user.is_manager:
         certs = Certificate.objects.select_related('staff_user', 'course', 'staff_user__department')
 
         q = request.GET.get('q', '').strip()
@@ -96,7 +93,7 @@ def verify_certificate_view(request, cert_id):
 @login_required
 def download_certificate_pdf(request, cert_id):
     qs = Certificate.objects.filter(certificate_id=cert_id)
-    if not _is_manager(request.user):
+    if not request.user.is_manager:
         qs = qs.filter(staff_user=request.user)
     certificate = get_object_or_404(qs)
     

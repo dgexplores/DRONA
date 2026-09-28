@@ -12,6 +12,7 @@ import threading
 from django.conf import settings
 from django.contrib.auth.forms import PasswordResetForm
 from django.db import close_old_connections, transaction
+from django.db.transaction import TransactionManagementError
 
 logger = logging.getLogger(__name__)
 
@@ -35,9 +36,14 @@ def run_after_commit(func):
     def _spawn():
         threading.Thread(target=_job, daemon=True).start()
 
+    # Catch exactly the one error Django documents for this call, and run the job
+    # inline. A bare `except Exception` here was worse than useless: in autocommit
+    # mode `on_commit` invokes `_spawn()` inline, so a raise from `_spawn` was
+    # caught and `_spawn` called a second time - two setup emails. Narrowing to
+    # this one error keeps the manual-transaction fallback and drops the double-run.
     try:
         transaction.on_commit(_spawn)
-    except Exception:
+    except TransactionManagementError:
         _spawn()
 
 

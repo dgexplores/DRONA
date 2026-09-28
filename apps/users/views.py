@@ -242,7 +242,7 @@ def logout_view(request):
 @login_required
 def profile_view(request):
     staff_user = request.user
-    is_manager = staff_user.role in ('admin', 'hod') or staff_user.is_superuser or staff_user.is_staff
+    is_manager = staff_user.is_manager
 
     if is_manager:
         return _manager_profile(request)

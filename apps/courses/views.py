@@ -15,6 +15,7 @@ from datetime import datetime as dt, timedelta as td
 
 from apps.courses.models import (Course, Category, Module, Lesson, Enrollment, LessonProgress,
                                TrainingSession, StoredUpload)
+from apps.courses.access import can_view_course
 from apps.courses.video import resolve_video
 from apps.users.models import Department, StaffUser
 from apps.certificates.models import Certificate
@@ -36,7 +37,7 @@ def dashboard_view(request):
 
     # Managers (super admin / HOD) get a command-center dashboard,
     # not the learner catalogue. Return before any learner auto-enrollment.
-    is_manager = bool(getattr(user, 'is_manager', False))
+    is_manager = user.is_manager
     if is_manager:
         return _manager_dashboard(request)
 
@@ -121,7 +122,7 @@ def course_detail_view(request, course_id):
     course = get_object_or_404(Course, id=course_id)
 
     # Managers may preview any course; staff may view assigned courses or self-enroll into electives.
-    is_manager = bool(getattr(request.user, 'is_manager', False))
+    is_manager = request.user.is_manager
 
     try:
         enrollment = Enrollment.objects.get(staff_user=request.user, course=course)
@@ -164,7 +165,7 @@ def lesson_view(request, lesson_id):
     lesson = get_object_or_404(Lesson, id=lesson_id)
     course = lesson.module.course
 
-    is_manager = bool(getattr(request.user, 'is_manager', False))
+    is_manager = request.user.is_manager
     try:
         enrollment = Enrollment.objects.get(staff_user=request.user, course=course)
     except Enrollment.DoesNotExist:
@@ -209,7 +210,7 @@ def sop_document_view(request, lesson_id):
     from django.http import FileResponse, Http404
     lesson = get_object_or_404(Lesson, id=lesson_id)
     course = lesson.module.course
-    is_manager = bool(getattr(request.user, 'is_manager', False))
+    is_manager = request.user.is_manager
     if not is_manager:
         if not Enrollment.objects.filter(staff_user=request.user, course=course).exists():
             raise Http404("Not enrolled in this course.")
@@ -295,7 +296,7 @@ def training_calendar(request):
     for s in sessions:
         day_map.setdefault(s.date.day, []).append(s)
 
-    is_manager = request.user.role in ('hod', 'admin') or request.user.is_superuser or request.user.is_staff
+    is_manager = request.user.is_manager
 
     context = {
         'sessions': sessions,
@@ -383,10 +384,7 @@ def lesson_video_view(request, lesson_id):
     lesson = get_object_or_404(Lesson, id=lesson_id)
     if not lesson.video_file:
         raise Http404("No uploaded video for this lesson.")
-    is_manager = bool(getattr(request.user, 'is_manager', False))
-    if not is_manager and not Enrollment.objects.filter(
-        staff_user=request.user, course=lesson.module.course
-    ).exists():
+    if not can_view_course(request.user, lesson.module.course):
         raise Http404("Not found.")
     row = StoredUpload.objects.filter(name=lesson.video_file.name).first()
     if row is None:

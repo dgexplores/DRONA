@@ -80,3 +80,52 @@ class VideoServingTests(TestCase):
         row = StoredUpload.objects.get(name=self.lesson.video_file.name)
         self.assertEqual(bytes(row.content), MP4)
         self.assertEqual(row.content_type, "video/mp4")
+
+
+class CanViewCourseTests(TestCase):
+    """The shared 'manager OR enrolled' predicate.
+
+    This gate was written out three times. The predicate is now shared but each
+    caller keeps its own denial response, so these tests pin the rule itself
+    rather than any one view's response.
+    """
+    def setUp(self):
+        from apps.users.models import Department
+        from apps.courses.models import Category, Course, Enrollment, Module
+        self.dept = Department.objects.create(name="IT", code="IT")
+        self.cat = Category.objects.create(name="Safety")
+        self.course = Course.objects.create(title="Safety", category=self.cat)
+        self.staff = StaffUser.objects.create_user(
+            employee_id="EMP700", username="emp700", email="g@h.com",
+            password="pass12345", role="staff", department=self.dept
+        )
+        self.hod = StaffUser.objects.create_user(
+            employee_id="HOD700", username="hod700", email="i@j.com",
+            password="pass12345", role="hod", department=self.dept
+        )
+
+    def test_enrolled_staff_allowed(self):
+        from apps.courses.models import Enrollment
+        from apps.courses.access import can_view_course
+        Enrollment.objects.create(staff_user=self.staff, course=self.course)
+        self.assertTrue(can_view_course(self.staff, self.course))
+
+    def test_unenrolled_staff_refused(self):
+        from apps.courses.access import can_view_course
+        self.assertFalse(can_view_course(self.staff, self.course))
+
+    def test_manager_allowed_without_enrolment(self):
+        from apps.courses.access import can_view_course
+        self.assertTrue(can_view_course(self.hod, self.course))
+
+    def test_no_course_means_nothing_to_gate(self):
+        """A quiz whose course is unset must not be denied, which is what the
+        old 'if course and ...' guard did."""
+        from apps.courses.access import can_view_course
+        self.assertTrue(can_view_course(self.staff, None))
+
+    def test_agrees_with_the_is_manager_property(self):
+        from apps.courses.access import can_view_course
+        for user in (self.staff, self.hod):
+            if user.is_manager:
+                self.assertTrue(can_view_course(user, self.course))
