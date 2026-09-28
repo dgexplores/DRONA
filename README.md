@@ -1,17 +1,20 @@
-# SRMS DRONA — Staff Learning & Training Platform
+# DRONA — Staff Learning & Training Platform
 
-A training portal for the **non-teaching staff** of SRMS Group of Institutions. Staff watch
-short SOP videos, take quizzes, earn QR-verifiable certificates, and see what training is still
-pending. Their Head of Department and the Super Admin build courses and track progress.
+A training portal for the **non-teaching staff** of SRMS Group of Institutions. Staff watch short
+SOP videos, take quizzes, earn QR-verifiable certificates, and see what training is still pending.
+Their Head of Department and the Super Admin build courses and track progress.
+
+**Django 6.0.8 · Python 3.12 · PostgreSQL · 203 tests · 0 dependency advisories · English/हिन्दी**
 
 | | |
 |---|---|
 | **Live app** | <https://dronav2.onrender.com> |
 | **Sign in** | <https://dronav2.onrender.com/login/> |
 | **Source** | <https://github.com/dgexplores/DRONA> |
-| **Stack** | Django 6.0.8 · Python 3.12 · PostgreSQL · server-rendered HTML |
-| **Tests** | 203 passing, green on every push |
-| **Dependencies** | 0 known vulnerabilities (`pip-audit`) |
+
+---
+
+## Run it locally
 
 ```bash
 git clone https://github.com/dgexplores/DRONA.git && cd DRONA
@@ -21,154 +24,89 @@ pip install -r requirements.txt
 ./venv/bin/python manage.py runserver        # http://127.0.0.1:8000/
 ```
 
-The Hindi translation catalog is committed, so a fresh clone runs without `gettext` installed.
+Local logins: `ADMIN001` / `ADMIN001` (admin) · `HOD_IT` / `HOD_IT` (HOD) · `EMP001` / `drona123`
+(staff). Published on purpose — the repository is public, and these match **no** live account.
+The Hindi catalog is committed, so no `gettext` install is needed.
+
+**Live logins are different.** The deployed site is locked down: 14 unique generated passwords,
+none published. The operator reads them from the macOS keychain —
+`security find-generic-password -a EMP001 -s DRONA -w`.
 
 ---
 
-## What it does
+## What a user gets
 
-**For staff** — a bilingual (English / हिन्दी) learning app. Assigned courses, video lessons that
-resume where you stopped, quizzes with a 70% pass threshold and retries, certificates you can
-download, and an installable PWA. No tracking, no lockout, no dead ends.
+| Role | Screens |
+|---|---|
+| **Staff** | Assigned courses · video lessons that resume where they stopped · quizzes (70% pass, retries) · certificate download · installable PWA |
+| **Head of Department** | Management console: create courses, upload lessons, edit the training calendar, enrol by department or individually, approve sign-ups, HR analytics |
+| **Super Admin** | Everything an HOD can do, plus creating HOD accounts and a platform-wide certificate directory with search and filters |
 
-**For HODs** — a management console: create courses, upload lessons, schedule sessions on an
-editable calendar, enrol people by department or individually, approve new sign-ups, and run HR
-analytics including a per-lesson **watch-progress report** with CSV export.
-
-**For the Super Admin** — everything an HOD can do, plus creating HOD accounts and a
-platform-wide certificate directory with search and filters.
-
-### Three things worth a closer look
-
-- **Progress cannot be forged.** Watch position is saved on a 10s heartbeat, and lesson
-  completion is **derived server-side** from accumulated watch time (90% of duration). A
-  forged `completed: true` from the browser console earns nothing.
-- **Three real vulnerabilities were found by testing each control against its attacker** — a
-  stored XSS on media routes, missing security headers on exactly the routes that echo uploader
-  bytes, and a rate limiter that was trivially bypassable via a client-controlled header. All
-  three are fixed, and each fix has a regression test. Details:
-  [`ENGINEERING.md`](ENGINEERING.md).
-- **Production refuses to boot misconfigured.** With `DJANGO_DEBUG=False`, the settings module
-  raises on a default `DJANGO_SECRET_KEY` and on `ALLOWED_HOSTS=*` rather than serving wide open.
-
----
-
-## Try it
-
-**Live** — sign in at [`/login/`](https://dronav2.onrender.com/login/). The live site is
-**locked down**: all 14 accounts have unique generated 20-character passwords, none published
-here. Employee IDs below are public identifiers, not secrets.
-
-| Role | Employee ID | Password |
-|---|---|---|
-| Super Admin | `ADMIN001` | *(unique, not published)* |
-| Head of Department | `HOD_IT` `HOD_CS` `HOD_EN` `HOD_EE` `HOD_PHARM` `HOD_MGMT` | *(unique, not published)* |
-| Staff | `EMP001` … `EMP006`, `EMP010` | *(unique, not published)* |
-
-The operator's copy of the 14 passwords lives in the **macOS login keychain** (service
-`DRONA`), so the database holds only Argon2 hashes and no plaintext credential file exists on
-disk:
-
-```bash
-security find-generic-password -a EMP001 -s DRONA -w     # read one password
-```
-
-`ADMIN001` is additionally pinned in the Render env var `DJANGO_ADMIN_PASSWORD`, because the
-boot command re-applies it on every deploy — env vars are write-only, so the keychain is the
-readable source of truth.
-
-> ⚠️ **The keychain is the only copy.** Neither the database (Argon2 hashes) nor the env var
-> (write-only) can produce a password back. If the keychain is lost, all 14 are gone and must be
-> re-issued — see [Rotating any other account](#operating-it). Keep iCloud Keychain sync on if you
-> want a second copy.
-
-> A fresh **local** `seed.py` uses published defaults (`ADMIN001`/`ADMIN001`, HOD = its own ID,
-> staff = `drona123`). Those match no live account — they are a first-run convenience, and this
-> repository is public, so treat them as constants that must never be deployed.
-
-**Walkthrough paths**
+**Try these live** — all need a login first.
 
 | | |
 |---|---|
 | Course 9 — Workplace Communication & Conduct | [`/courses/9/`](https://dronav2.onrender.com/courses/9/) |
 | HR dashboard | [`/analytics`](https://dronav2.onrender.com/analytics) |
-| Watch-progress report | [`/analytics/watch-progress/`](https://dronav2.onrender.com/analytics/watch-progress/) |
-| Certificate verification | [`/verify/<id>/`](https://dronav2.onrender.com/verify/) |
+| Watch-progress report (per lesson, CSV export) | [`/analytics/watch-progress/`](https://dronav2.onrender.com/analytics/watch-progress/) |
+| Certificate verification | `/verify/<id>/` — reached by scanning the QR code on a certificate, not by guessing URLs |
 
-> **Login is rate-limited to 5 attempts / 5 minutes per IP** — fine for one tester, a wall for a
-> group demo. Tell us if you need it loosened.
-
----
-
-## Architecture notes
-
-Only the parts that shape decisions. Full detail in [`ENGINEERING.md`](ENGINEERING.md).
-
-- **Auth is employee ID + password only.** Three roles: `staff` → `hod` → `admin`. Third-party
-  SSO (Clerk) was integrated, then removed — the integration shipped two real defects and is
-  documented so a future re-add is deliberate.
-- **Video lives in the database**, served with HTTP Range support so seeking works. Moving it to
-  object storage is a known future step, not an oversight.
-- **AI quiz generation** turns an SOP PDF into MCQs with answer keys. When the API is
-  unavailable the rule-based generator runs and **a warning is logged** — template questions are
-  never presented as AI-generated.
-- **`render.yaml` is Blueprint-authoritative but Auto Sync is OFF.** Config changes need a
-  dashboard Sync. Editing the file alone does nothing. This caused one incident and is now
-  documented as a trap.
-- **Email is not live.** The reminder scheduler runs, but no SMTP credentials are set, so mail
-  logs a `WARNING` instead of pretending to send. Deliverability work is the one piece of
-  go-live left.
+> Login is rate-limited to 5 attempts / 5 minutes per IP.
 
 ---
 
-## Operating it
+## Three things worth a closer look
 
-- **Status log** — [`HANDOFF.md`](HANDOFF.md): deploy state, outstanding work, how to verify.
-- **Planned work** — [`ROADMAP.md`](ROADMAP.md): YouTube-hosted lessons, why Google Drive links
-  cannot be position-tracked, when video should leave the database. Agreed, deliberately unbuilt.
-- **Render service** — `srv-dajkh37qj5pc73e038i0`, Blueprint `exs-daq0qoek1f9s73dhte70`.
-  Config in [`render.yaml`](render.yaml). Secrets live only in Render env vars, which are
-  **write-only** — the keychain is the source of truth for anything that has to be re-readable.
-- **Admin password rotation** — the Render start command runs `manage.py boot`, which applies
-  `DJANGO_ADMIN_PASSWORD` **on every deploy**. Change the env var *and* the database together, in
-  that order, or the next deploy reverts one of them. Rotate it in the keychain too:
+- **Progress cannot be forged.** Watch position is saved on a 10s heartbeat, and lesson
+  completion is **derived server-side** from accumulated watch time (90% of duration). Posting
+  `completed: true` from the console earns nothing — there is a named regression test for it.
+- **Three real vulnerabilities were found by attacking our own controls** — a stored XSS on media
+  routes, missing security headers on exactly the routes that echo uploader bytes, and a rate
+  limiter bypassable with a client-controlled header. All fixed, each with a test.
+  Write-ups: [`ENGINEERING.md`](ENGINEERING.md).
+- **Bilingual throughout.** 402 catalogued UI strings, plus `_hi` fields on course, module, lesson
+  and quiz content — not just navigation, but validation messages and every error page.
 
-  ```bash
-  security add-generic-password -U -a ADMIN001 -s DRONA -w '<new-password>'
-  ```
-- **Rotating any other account** — no env var involved, so the database is the only writer:
+## Architecture at a glance
 
-  ```bash
-  ./venv/bin/python manage.py changepassword EMP003      # interactive, prompts twice
-  security add-generic-password -U -a EMP003 -s DRONA -w '<new-password>'
-  ```
+| Layer | Choice |
+|---|---|
+| Backend | Django 6 · custom `StaffUser` (`USERNAME_FIELD = employee_id`) |
+| Auth | Employee ID + password only, three roles `staff` → `hod` → `admin`. Argon2 hashing |
+| Frontend | Server-rendered HTML · custom design system · vanilla JS · mobile-first |
+| Database | PostgreSQL in production, SQLite for local |
+| AI | Google Gemini — turns an SOP PDF into MCQs; falls back to rule-based with a logged warning |
+| Certificates | ReportLab + `qrcode` — QR resolves to a public `/verify/<id>/` page |
+| Media | Videos stored in the DB and served with HTTP Range so seeking works |
+| Scheduling | APScheduler for training reminders |
+| Hosting | Render + external Postgres; GitHub Actions for CI and a 5-minute keep-alive ping |
 
-  Order does not matter off Render; on Render, use `manage.py boot` semantics and rotate the
-  env var first if the account is `ADMIN001`.
-- **Demo mode** — `reset_test_passwords` restores `password == employee ID` for a walkthrough.
-  It requires a typed confirmation (or `--yes`), can be narrowed with `--role`, and
-  **republishes every account it touches.** Treat it as a temporary switch, never a convenience.
-  To re-lock afterwards, rotate each account's password and its keychain entry; a repo that once
-  carried live credentials is public forever, so a rotate-and-verify is the only real fix.
-- **CI/CD** — GitHub Actions runs the Django check, a missing-migration check, the full 203-test
-  suite, `collectstatic` and `compileall` on every push and PR. Backend deploys to Render on push
-  to `main`; a 5-minute cron pings `/health/` so the free instance stays warm.
+**Deliberate omissions** — email delivery needs SMTP credentials the service doesn't have, so mail
+logs a warning instead of pretending to send. YouTube as a video source is deferred. Both are
+written up in [`ROADMAP.md`](ROADMAP.md) with the reasoning.
 
 ---
 
-## Development
+## Working on it
 
 ```bash
 ./venv/bin/python manage.py test apps --settings=srms_dorna.test_settings
 ```
 
-The suite covers auth, RBAC, the approval flow, rate limiting, quizzes, certificates, the
-certificate directory, per-student assignment, calendar gating and analytics — plus a named
-regression test for every defect fixed in `ENGINEERING.md`. Tests write generated PDFs to a
-temporary directory, so a run leaves the working tree clean.
+203 tests covering auth, RBAC, the approval flow, rate limiting, quizzes, certificates, the
+certificate directory, course assignment, calendar gating and analytics — plus a named regression
+test for every defect in [`ENGINEERING.md`](ENGINEERING.md). Tests write PDFs to a temp directory,
+so a run leaves the working tree clean.
 
-**Before changing how the system behaves, read [`ENGINEERING.md`](ENGINEERING.md).** It records
-the invariants this project depends on and the traps it has already hit.
+| Document | What it holds |
+|---|---|
+| [`ENGINEERING.md`](ENGINEERING.md) | Invariants, review checklist, and every trap this codebase has hit — **read before changing behaviour** |
+| [`HANDOFF.md`](HANDOFF.md) | Deploy state, outstanding work, how to verify from the repo |
+| [`ROADMAP.md`](ROADMAP.md) | Agreed-but-unbuilt work and why |
+| [`render.yaml`](render.yaml) | Deployment config |
+
+**Deploy note:** `render.yaml` is Blueprint-authoritative but **Auto Sync is off** — config
+changes need a dashboard Sync; editing the file alone does nothing.
 
 ---
 
