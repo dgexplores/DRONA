@@ -202,3 +202,31 @@ class WatchProgressReportTests(TestCase):
         self.assertEqual(resp.status_code, 200)
         # falls back to a real course rather than erroring or blanking
         self.assertEqual(resp.context['course'], self.course)
+
+    def test_default_course_is_the_most_populated_one(self):
+        """Alphabetical order used to land on a course nobody had started."""
+        from apps.courses.models import Enrollment, Lesson, LessonProgress, Module
+        big = Course.objects.create(title="Aaa Busy", category=self.cat)
+        bm = Module.objects.create(course=big, title="M", order=1)
+        bl = Lesson.objects.create(module=bm, title="L", lesson_type="video", duration_minutes=10)
+        other = StaffUser.objects.create_user(
+            employee_id="EMP602", username="emp602", email="i@j.com",
+            password="pass12345", role="staff", department=self.dept
+        )
+        Enrollment.objects.create(staff_user=other, course=big)
+        self.client.login(employee_id='EMP601', password='pass12345')
+        self.assertEqual(self.client.get(reverse('watch_progress')).context['course'], big)
+
+    def test_course_selector_is_ordered_by_enrollment_count(self):
+        from apps.courses.models import Enrollment
+        big = Course.objects.create(title="Zzz Busy", category=self.cat)
+        # "Safety" already has 1 enrolment from setUp; give this one 2 so the
+        # count must decide the order, not the title.
+        for n in (602, 603):
+            u = StaffUser.objects.create_user(
+                employee_id=f"EMP{n}", username=f"emp{n}", email=f"{n}@l.com",
+                password="pass12345", role="staff", department=self.dept
+            )
+            Enrollment.objects.create(staff_user=u, course=big)
+        self.client.login(employee_id='EMP601', password='pass12345')
+        self.assertEqual(self.client.get(reverse('watch_progress')).context['courses'][0], big)

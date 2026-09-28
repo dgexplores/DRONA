@@ -118,9 +118,13 @@ def watch_progress_view(request):
         return render(request, 'errors/403.html', status=403)
 
     # Only courses somebody is actually enrolled in - an empty report is noise.
+    # Ordered by how many people are enrolled, so the default landing course is
+    # the one worth looking at. Plain alphabetical order used to default to
+    # "Welcome & Overview", which no one had started.
     courses = list(
         Course.objects.filter(enrollments__isnull=False)
-        .distinct().order_by('title')
+        .annotate(enrolled_count=Count('enrollments'))
+        .distinct().order_by('-enrolled_count', 'title')
     )
 
     course = None
@@ -156,7 +160,8 @@ def export_watch_progress_csv(request):
 
     courses = list(
         Course.objects.filter(enrollments__isnull=False)
-        .distinct().order_by('title')
+        .annotate(enrolled_count=Count('enrollments'))
+        .distinct().order_by('-enrolled_count', 'title')
     )
     course = next((c for c in courses if str(c.id) == request.GET.get('course')), None)
     if course is None:
