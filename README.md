@@ -273,6 +273,14 @@ off until the SMTP env vars below are set.
 > password equal to its Employee ID and published in this README. That is a conscious,
 > temporary choice — see [Demo logins](#-demo-logins) — and it is the one thing on this page
 > that must be undone before real use.
+>
+> `DJANGO_ADMIN_PASSWORD` on the service is **also** set to `ADMIN001` to match. This matters
+> and is easy to trip over: the Render `startCommand` runs `manage.py boot`, and `boot` calls
+> `set_admin_password`, which **overwrites** `ADMIN001` from that env var on *every deploy*.
+> Leaving the env var strong while the database said otherwise meant `ADMIN001` silently
+> reverted the first time anything was deployed. Both are set to the same dummy so the reset
+> is idempotent. To lock down, set the env var to a real secret, redeploy, and never run
+> `reset_test_passwords` again.
 
 > ⚠️ If you ever share an admin password in a chat/log, rotate it: update the
 > `DJANGO_ADMIN_PASSWORD` env var **on Render** (Dashboard → `DRONAv2` → Environment), then
@@ -366,6 +374,10 @@ through the UI.
 `set_admin_password` runs on every boot (`manage.py boot`). So to actually change the
 production admin password: set the env var, then **deploy**. A plain restart is not enough —
 it re-runs the command with the previous value.
+
+> ⚠️ The same boot hook means `reset_test_passwords` is **not** durable for `ADMIN001` on its
+> own — the very next deploy overwrites it from `DJANGO_ADMIN_PASSWORD`. During TESTING MODE
+> both are set to the same dummy value so they agree. Anywhere else, set the env var first.
 
 The HOD and staff passwords live only in the database, set once when the account is created.
 `seed.py` deliberately does **not** re-assert them on a later run — otherwise re-seeding would
