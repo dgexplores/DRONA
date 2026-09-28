@@ -28,10 +28,30 @@ RESET_MAX_RATE = '3/1h'  # max 3 password-reset requests per IP per hour
 
 
 def get_client_ip(group, request):
+    """Best-effort client IP for rate-limit bucketing.
+
+    Every value here is attacker-controlled: `X-Forwarded-For` is set by the
+    client, and the app sits behind a proxy that appends to it. Taking the
+    first XFF entry therefore let anyone mint a fresh rate-limit bucket per
+    request by sending a different header, which is exactly what the limiter
+    exists to prevent - confirmed live: six bad logins with six spoofed XFF
+    values all returned 200, never 429.
+
+    Order matters, so it is REMOTE_ADDR first. That is the address Render's
+    proxy actually saw, so it is the one value we cannot be fed. XFF is only
+    consulted when there is no proxy in front (local dev), where it is the
+    best guess available.
+
+    If a trusted proxy count is ever needed, pin it via a setting rather than
+    trusting a header length.
+    """
+    remote = request.META.get('REMOTE_ADDR', '')
+    if remote:
+        return remote
     xff = request.META.get('HTTP_X_FORWARDED_FOR', '')
     if xff:
-        return xff.split(',')[0].strip()
-    return request.META.get('REMOTE_ADDR', '')
+        return xff.split(',')[-1].strip()
+    return ''
 
 
 def _send_approval_email(user, approved):

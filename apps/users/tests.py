@@ -604,3 +604,42 @@ class SecurityHeadersCoverageTests(TestCase):
         csp = self._headers_for(HttpResponse('x'))['Content-Security-Policy']
         script_src = [d for d in csp.split(';') if 'script-src' in d][0]
         self.assertNotIn("'unsafe-inline'", script_src)
+
+
+class ClientIpRateLimitKeyTests(TestCase):
+    """The rate-limit key must be a value the client cannot choose.
+
+    get_client_ip used to return the first X-Forwarded-For entry, which the
+    client sets. Behind Render the proxy appends to that header, so the first
+    entry is whatever the caller sent - one fresh bucket per request, and the
+    login limiter never fired. Proven live: six bad logins with six different
+    spoofed XFF values all returned 200.
+    """
+    def _key(self, **meta):
+        from django.test import RequestFactory
+        from apps.users.views import get_client_ip
+        request = RequestFactory().post('/login/', **meta)
+        return get_client_ip(None, request)
+
+    def test_remote_addr_wins_over_spoofed_xff(self):
+        self.assertEqual(
+            self._key(HTTP_X_FORWARDED_FOR='1.2.3.4', REMOTE_ADDR='10.0.0.9'),
+            '10.0.0.9',
+        )
+
+    def test_spoofed_xff_alone_is_ignored_when_proxy_present(self):
+        for spoof in ('1.1.1.1', '2.2.2.2', '3.3.3.3'):
+            self.assertEqual(
+                self._key(HTTP_X_FORWARDED_FOR=spoof, REMOTE_ADDR='10.0.0.9'),
+                '10.0.0.9',
+            )
+
+    def test_falls_back_to_xff_when_no_proxy(self):
+        """No proxy address available, so XFF is the best guess left."""
+        self.assertEqual(
+            self._key(HTTP_X_FORWARDED_FOR='1.2.3.4, 5.6.7.8', REMOTE_ADDR=''),
+            '5.6.7.8',
+        )
+
+    def test_never_returns_empty_for_a_real_request(self):
+        self.assertTrue(self._key(REMOTE_ADDR='10.0.0.9'))
