@@ -6,9 +6,34 @@ Their Head of Department and the Super Admin manage the courses and track progre
 
 **Live now:** <https://dronav2.onrender.com> · **Interface language:** English / हिन्दी
 
-> **Planned work** — the watch-progress report, YouTube-hosted lessons, and why Google Drive
-> links cannot be position-tracked are written up in [`ROADMAP.md`](ROADMAP.md). Agreed and
-> deliberately not built yet.
+```bash
+git clone https://github.com/dgexplores/DRONA.git
+cd DRONA
+python3 -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+./venv/bin/python manage.py migrate
+./venv/bin/python seed.py
+./venv/bin/python manage.py runserver        # http://127.0.0.1:8000/
+```
+
+Full walkthrough with screenshots-free detail: [Quick Start](#-quick-start-local--step-by-step) ·
+Logins: [Demo logins](#-demo-logins) · Deployment: [Production deployment](#-production-deployment-on-render-backend--the-live-target)
+
+| | |
+|---|---|
+| **Live app** | <https://dronav2.onrender.com> |
+| **Sign in** | <https://dronav2.onrender.com/login/> |
+| **Source** | <https://github.com/dgexplores/DRONA> |
+| **Tests** | 203 passing (`./venv/bin/python manage.py test apps`) |
+| **Django / Python** | 6.0.8 / 3.12+ |
+| **License** | See [below](#-license--usage) |
+
+> **Planned work** — YouTube-hosted lessons, why Google Drive links cannot be
+> position-tracked, and when video should move off the database are written up in
+> [`ROADMAP.md`](ROADMAP.md). Agreed and deliberately not built yet.
+>
+> [`HANDOFF.md`](HANDOFF.md) is the operator's handover and [`ENGINEERING.md`](ENGINEERING.md)
+> records the traps this codebase has already hit — read both before changing anything.
 
 ---
 
@@ -255,15 +280,22 @@ off until the SMTP env vars below are set.
 - **CSP + security headers** via `srms_dorna.middleware.SecurityHeadersMiddleware`
   (per-request nonce for inline scripts, Referrer-Policy, Permissions-Policy, nosniff,
   `frame-ancestors 'none'`, `object-src 'none'`). Inline `<script>` tags must carry
-  `nonce="{{ request.csp_nonce }}"` or the browser will block them.
+  `nonce="{{ request.csp_nonce }}"` or the browser will block them. The middleware gates on
+  `HttpResponseBase`, **not** `HttpResponse` — see the first bug below; gating on the narrow
+  class silently skipped every header on the video and PDF responses.
+- **Uploads are validated on two signals.** `apps/courses/storage.py` requires the declared
+  `Content-Type` *and* the filename extension to agree, then re-derives the stored type from
+  the extension with `mimetypes`. A declared type is untrusted input and is never what gets
+  persisted or served. Size caps: 8 MB documents, 25 MB video.
 - **Management CLI masks PII** — `list_users` prints `***@domain` unless `--include-email`
   is passed, so staff addresses never land in logs by default.
 - **Anti-enumeration** login: pending/inactive accounts return a generic error message, and login
   goes through `authenticate()` so an unknown Employee ID costs the same as a wrong password
   (Django hashes a dummy value) — the message and the timing both stay generic.
 - **Role-gated manager views** — certificate directory, course assignment, and calendar editing
-  honor the same single `_can_manage`/`_is_manager` check (super admin + HOD), so there is no
-  divergent role logic to bypass.
+  honor the same single `StaffUser.is_manager` property, and the "manager OR enrolled" rule for
+  course content lives in one place (`apps/courses/access.py`), so there is no divergent role
+  logic to bypass.
 - **Background email** — approval/reminder/setup emails send on a daemon thread after commit with
   `EMAIL_TIMEOUT`, so SMTP stalls never block a request.
 - **Demo credentials below are for a fresh seed only** — production override them with strong
@@ -273,6 +305,20 @@ off until the SMTP env vars below are set.
 > password equal to its Employee ID and published in this README. That is a conscious,
 > temporary choice — see [Demo logins](#-demo-logins) — and it is the one thing on this page
 > that must be undone before real use.
+
+### Bugs found by testing a control against its attacker
+
+Three real vulnerabilities were found this way, all since fixed. Each one was a control that
+existed, was configured correctly, and passed 200+ tests — and did not work.
+
+| Bug | How it was found | Fix |
+|---|---|---|
+| **Stored XSS on media routes.** A file named `evil.mp4` declaring `Content-Type: text/html` passed validation on the extension alone, was stored verbatim, and was served back `inline` as HTML. | Uploaded one and read the stored row: `content_type text/html` over `b'<script>alert(1)</script>'`. | Both signals must agree; stored type re-derived from the extension. |
+| **No security headers on video/PDF responses.** The middleware gated on `HttpResponse`; `StreamingHttpResponse` and `FileResponse` subclass `HttpResponseBase`, so every media response shipped with no CSP, no nosniff, no frame protection — exactly the routes that echo uploader bytes back. | Checked response classes with `issubclass`, then read the headers off the live video route. | Gate on `HttpResponseBase`; tests assert all five headers on HTML, streamed, and file responses. The CSP missing here is what would have limited the XSS above. |
+| **Rate limiter was bypassable.** `get_client_ip` returned the first `X-Forwarded-For` entry — a value the client sets — so each request could mint a fresh bucket. | Six bad logins with six different spoofed headers: `200 200 200 200 200 200`, never 429. | Key on `REMOTE_ADDR` (what the proxy actually saw, unforgeable); fall back to XFF only with no proxy. |
+
+`pip-audit` reports **0 advisories** (was 17, all fixed: Django, pypdf, sqlparse,
+cryptography). `requirements.txt` is fully pinned and is the authoritative install input.
 >
 > `DJANGO_ADMIN_PASSWORD` on the service is **also** set to `ADMIN001` to match. This matters
 > and is easy to trip over: the Render `startCommand` runs `manage.py boot`, and `boot` calls
@@ -301,14 +347,37 @@ off until the SMTP env vars below are set.
 > the dependencies, create the database schema, load demo data, and run the dev server. You end
 > up with a fully working app at `http://127.0.0.1:8000/`.
 
-Prereqs: **Python 3.12+** and **Git**.
+Prereqs: **Python 3.12+** and **Git**. `runtime.txt` and CI pin 3.12; newer versions work — the
+203-test suite passes on 3.14, which is what the commands above were verified on.
 
 ### 1. Get the code
+
+<table>
+<tr><th>HTTPS (no SSH key needed)</th><th>SSH</th></tr>
+<tr>
+<td>
+
+```bash
+git clone https://github.com/dgexplores/DRONA.git
+cd DRONA
+```
+
+</td>
+<td>
 
 ```bash
 git clone git@github.com:dgexplores/DRONA.git
 cd DRONA
 ```
+
+</td>
+</tr>
+</table>
+
+Or download a zip: <https://github.com/dgexplores/DRONA/archive/refs/heads/main.zip>
+
+Everything needed to run is in the repo — the Hindi `.mo` catalog is committed, so
+`gettext` is not required on your machine.
 
 ### 2. Create and activate a virtual environment
 
@@ -641,7 +710,7 @@ Three workflows in `.github/workflows/`:
 
 | Workflow | File | Trigger | Job |
 |---|---|---|---|
-| **CI** | `.github/workflows/ci.yml` | push to `main`, every PR | Django system check · missing-migration check · full test suite (120) · `collectstatic` · `compileall` |
+| **CI** | `.github/workflows/ci.yml` | push to `main`, every PR | Django system check · missing-migration check · full test suite (203) · `collectstatic` · `compileall` |
 | **Deploy backend** | `.github/workflows/deploy-backend.yml` | **manual** (`workflow_dispatch`) | Deploys Django to Railway (`railway up`) — legacy, manual only |
 | **Keep-alive** | `.github/workflows/keep-alive.yml` | cron every 5 min + manual | GET `/health/` so the free Render instance never sleeps |
 
@@ -670,7 +739,7 @@ Three workflows in `.github/workflows/`:
 AI tests use the offline rule-based generator. It also swaps in `LocMemCache` (an in-memory DB
 cannot host the `DatabaseCache` backend) and MD5 password hashing for speed.
 
-**The suite is 120 tests and must stay green.** Coverage includes auth, RBAC, approval flow,
+**The suite is 203 tests and must stay green.** Coverage includes auth, RBAC, approval flow,
 rate limiting, quizzes, certificates, the certificate directory + filters, per-student
 assignment, calendar manager gating, and analytics — plus the regression guards added for the
 defects fixed in `ENGINEERING.md`:
@@ -725,8 +794,14 @@ DRONA/
 │                       #   Apply via dashboard Sync or scripts/apply_render_config.py (see Live Deployment)
 ├── Procfile            # Railway web command (kept in sync, currently unused)
 ├── railway.toml        # Railway config (kept in sync, currently unused)
+├── locale/             # Hindi translations - django.po is source, django.mo is
+│                       #   COMMITTED on purpose so a fresh clone works without
+│                       #   gettext installed (rebuild: manage.py compilemessages -l hi)
+├── runtime.txt         # Python version pin for Render (3.12)
 ├── seed.py             # Demo data loader
-└── requirements.txt
+├── requirements.txt    # Fully pinned - the authoritative install input
+├── ROADMAP.md          # Agreed-but-unbuilt work, and the reasoning behind it
+└── .env.example        # Template for local env vars. Real .env is git-ignored
 ```
 
 ---

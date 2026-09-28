@@ -31,3 +31,7 @@ media/
 
 # Test artifacts
 /tmp/
+
+# Compiled gettext artifacts: build with
+#   python manage.py compilemessages -l hi
+*.mo

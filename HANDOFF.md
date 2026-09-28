@@ -20,8 +20,8 @@ YouTube as a primary source, and Google Drive links (cannot be position-tracked)
 | Working tree | clean (`git status --porcelain` empty) |
 | Branch | `main`, in sync with `origin/main` (0 behind / 0 ahead) |
 | HEAD | `f8d12c0` — *chore: prefer stable Gemini models…* (plus this HANDOFF update) |
-| CI | green — run `35889396418`, success (on Python 3.12, suite = 120 tests) |
-| Test suite | 120 tests, all passing; ship gate green **on local venv Python 3.12.13** (aligned) |
+| CI | green — run `35889396418`, success (on Python 3.12, suite = 203 tests) |
+| Test suite | 203 tests, all passing; ship gate green **on local venv Python 3.12.13** (aligned) |
 | Deployed | **live on Render** — service **`DRONAv2`** (`srv-dajkh37qj5pc73e038i0`), deploy `dep-dartv2sef86c73emicg0` (2026-09-26, commit `1ff324a`, bilingual en+hi) |
 | Health | `https://dronav2.onrender.com/health/` → `200 ok`; `/` → `302`; HTTP → HTTPS `301` |
 | Keep-alive | 3 layers: GH Actions `/health/` ping every 5m · local crontab every 6m (`scripts/keep_awake.sh`) · landing-page beacon. Fast boot via `manage.py boot` (69s → 44s cold). |
@@ -306,7 +306,7 @@ gitignored for runtime uploads.
 
 ### 5. ✅ DONE — Python version drift
 Resolved 2026-09-23: local venv rebuilt on **Python 3.12.13** (via `uv python install 3.12`),
-matching `runtime.txt` and CI. Full ship gate re-run green on 3.12 (120 tests).
+matching `runtime.txt` and CI. Full ship gate re-run green on 3.12 (203 tests).
 
 ### 6. ✅ DONE — Render redeploy (with a catch)
 Applied and verified on 2026-09-14. Production now runs the `set -e` start command and
