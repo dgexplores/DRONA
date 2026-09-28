@@ -217,16 +217,28 @@ class WatchProgressReportTests(TestCase):
         self.client.login(employee_id='EMP601', password='pass12345')
         self.assertEqual(self.client.get(reverse('watch_progress')).context['course'], big)
 
-    def test_course_selector_is_ordered_by_enrollment_count(self):
-        from apps.courses.models import Enrollment
-        big = Course.objects.create(title="Zzz Busy", category=self.cat)
-        # "Safety" already has 1 enrolment from setUp; give this one 2 so the
-        # count must decide the order, not the title.
-        for n in (602, 603):
+    def test_course_with_more_activity_wins_over_a_bigger_empty_one(self):
+        """A course with leftover enrolments but no watch time must not be the
+        default - it renders a correct, completely empty report."""
+        from apps.courses.models import Enrollment, Lesson, LessonProgress, Module
+        Enrollment, Lesson, LessonProgress, Module = self.M
+        stale = Course.objects.create(title="Aaa Lots Of Empty Enrolments", category=self.cat)
+        for n in range(700, 705):
             u = StaffUser.objects.create_user(
-                employee_id=f"EMP{n}", username=f"emp{n}", email=f"{n}@l.com",
+                employee_id=f"EMP{n}", username=f"emp{n}", email=f"{n}@m.com",
                 password="pass12345", role="staff", department=self.dept
             )
-            Enrollment.objects.create(staff_user=u, course=big)
+            Enrollment.objects.create(staff_user=u, course=stale)
+        # give "Safety" the only watch activity anywhere
+        LessonProgress.objects.create(
+            enrollment=self.enr, lesson=self.lesson, watched_seconds=60
+        )
         self.client.login(employee_id='EMP601', password='pass12345')
-        self.assertEqual(self.client.get(reverse('watch_progress')).context['courses'][0], big)
+        courses = self.client.get(reverse('watch_progress')).context['courses']
+        self.assertEqual(courses[0], self.course)
+        self.assertIn(stale, courses)          # still offered, just not first
+        self.assertEqual(courses.index(stale), len(courses) - 1)
+
+    def test_courses_with_no_activity_still_appear(self):
+        self.client.login(employee_id='EMP601', password='pass12345')
+        self.assertEqual(len(self.client.get(reverse('watch_progress')).context['courses']), 1)

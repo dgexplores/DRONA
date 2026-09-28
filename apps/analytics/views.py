@@ -2,7 +2,7 @@ import csv
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import StreamingHttpResponse
-from django.db.models import Count, Avg, Q, Sum
+from django.db.models import Count, Avg, F, Max, Q, Sum
 from django.core.paginator import Paginator
 from django.contrib import messages
 from django.utils import timezone
@@ -112,20 +112,32 @@ def _watch_progress_rows(course):
     }
 
 
+def _reportable_courses():
+    """Courses worth offering, best first.
+
+    Ordered by most recent watch activity, then by how many people are
+    enrolled, then by title. Activity has to lead: several courses have
+    leftover enrolments from earlier testing and no watch time at all, and
+    picking one of those renders a correct but empty report that reads as
+    "nobody has watched anything" instead of "you are on the wrong course".
+    nulls_last keeps those empty courses at the bottom rather than the top.
+    """
+    return (
+        Course.objects.filter(enrollments__isnull=False)
+        .annotate(
+            last_activity=Max('enrollments__lesson_progresses__updated_at'),
+            enrolled_count=Count('enrollments', distinct=True),
+        )
+        .order_by(F('last_activity').desc(nulls_last=True), '-enrolled_count', 'title')
+    )
+
+
 @login_required
 def watch_progress_view(request):
     if not bool(getattr(request.user, 'is_manager', False)):
         return render(request, 'errors/403.html', status=403)
 
-    # Only courses somebody is actually enrolled in - an empty report is noise.
-    # Ordered by how many people are enrolled, so the default landing course is
-    # the one worth looking at. Plain alphabetical order used to default to
-    # "Welcome & Overview", which no one had started.
-    courses = list(
-        Course.objects.filter(enrollments__isnull=False)
-        .annotate(enrolled_count=Count('enrollments'))
-        .distinct().order_by('-enrolled_count', 'title')
-    )
+    courses = list(_reportable_courses())
 
     course = None
     wanted = request.GET.get('course')
@@ -158,11 +170,7 @@ def export_watch_progress_csv(request):
     if not bool(getattr(request.user, 'is_manager', False)):
         return render(request, 'errors/403.html', status=403)
 
-    courses = list(
-        Course.objects.filter(enrollments__isnull=False)
-        .annotate(enrolled_count=Count('enrollments'))
-        .distinct().order_by('-enrolled_count', 'title')
-    )
+    courses = list(_reportable_courses())
     course = next((c for c in courses if str(c.id) == request.GET.get('course')), None)
     if course is None:
         course = courses[0] if courses else None
