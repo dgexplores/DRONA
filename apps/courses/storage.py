@@ -17,11 +17,13 @@ video in a Postgres row would bloat the database, slow every backup, and be
 pushed through memory on each read. Video stays link-based (YouTube/Vimeo/direct
 CDN URL), which is the better design at this scale regardless.
 """
+import mimetypes
+
 from django.core.files.base import ContentFile
-from django.utils.translation import gettext as _msg
 from django.core.files.storage import Storage
 from django.db import IntegrityError
 from django.utils.deconstruct import deconstructible
+from django.utils.translation import gettext as _msg
 
 MAX_UPLOAD_BYTES = 8 * 1024 * 1024
 ALLOWED_CONTENT_TYPES = {"application/pdf", "application/x-pdf"}
@@ -59,8 +61,18 @@ class DatabaseUploadStorage(Storage):
             ).format(limit=self.max_bytes // (1024 * 1024)))
         ctype = (getattr(content, "content_type", "") or "").lower()
         lowered = name.lower()
-        if ctype and ctype not in self.allowed_types and not lowered.endswith(self.extensions):
+        # Both signals must agree. Previously this was an OR, so a file named
+        # "evil.mp4" carrying `Content-Type: text/html` passed on the extension
+        # alone and was then served back inline as text/html - stored XSS on a
+        # route that serves whatever the uploader supplied.
+        ext_ok = lowered.endswith(self.extensions)
+        ctype_ok = (not ctype) or ctype in self.allowed_types
+        if not (ext_ok and ctype_ok):
             raise UploadNotAllowed(_msg("Unsupported file type."))
+        # The declared type is untrusted input. Re-derive from the extension so a
+        # stored row can never claim a type the extension does not support.
+        guessed = mimetypes.guess_type(lowered)[0]
+        ctype = guessed if guessed in self.allowed_types else "application/octet-stream"
 
         model = self._model()
         try:

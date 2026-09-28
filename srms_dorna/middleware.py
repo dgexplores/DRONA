@@ -1,5 +1,5 @@
 import secrets
-from django.http import HttpResponse
+from django.http.response import HttpResponseBase
 
 
 class SecurityHeadersMiddleware:
@@ -31,7 +31,12 @@ class SecurityHeadersMiddleware:
         nonce = secrets.token_urlsafe(16)
         request.csp_nonce = nonce
         response = self.get_response(request)
-        if isinstance(response, HttpResponse):
+        # HttpResponseBase, not HttpResponse: the media routes return
+        # StreamingHttpResponse (videos) and FileResponse (SOP PDFs), and neither
+        # subclasses HttpResponse. Testing against the narrow class silently
+        # skipped every header on exactly the routes that serve attacker-supplied
+        # bytes, which is where they matter most.
+        if isinstance(response, HttpResponseBase):
             csp = (
                 "default-src 'self'; "
                 # www.youtube.com is needed for the IFrame API, which is how

@@ -560,3 +560,47 @@ class ResetTestPasswordsCommandTests(TestCase):
         from django.core.management.base import CommandError
         with self.assertRaises(CommandError):
             call_command('reset_test_passwords', '--yes', stdout=self.out)
+
+
+class SecurityHeadersCoverageTests(TestCase):
+    """Headers must reach the media routes, not just HTML pages.
+
+    SecurityHeadersMiddleware gated on `isinstance(response, HttpResponse)`, but
+    StreamingHttpResponse and FileResponse subclass HttpResponseBase, not
+    HttpResponse - so every video and SOP response shipped with no CSP,
+    no nosniff, no frame protection. That is precisely where attacker-supplied
+    bytes are echoed back.
+    """
+    def _headers_for(self, response):
+        from srms_dorna.middleware import SecurityHeadersMiddleware
+        from django.test import RequestFactory
+        rf = RequestFactory()
+        return SecurityHeadersMiddleware(lambda r: response)(rf.get('/x')).headers
+
+    def test_html_gets_every_header(self):
+        from django.http import HttpResponse
+        h = self._headers_for(HttpResponse('x'))
+        for name in ('Content-Security-Policy', 'X-Content-Type-Options',
+                     'X-Frame-Options', 'Referrer-Policy', 'Permissions-Policy'):
+            self.assertIn(name, h)
+
+    def test_streaming_video_response_gets_every_header(self):
+        from django.http import StreamingHttpResponse
+        h = self._headers_for(StreamingHttpResponse(iter([b'x'])))
+        for name in ('Content-Security-Policy', 'X-Content-Type-Options',
+                     'X-Frame-Options', 'Referrer-Policy', 'Permissions-Policy'):
+            self.assertIn(name, h, f'{name} missing from a streamed video response')
+
+    def test_file_response_gets_every_header(self):
+        import io
+        from django.http import FileResponse
+        h = self._headers_for(FileResponse(io.BytesIO(b'%PDF')))
+        for name in ('Content-Security-Policy', 'X-Content-Type-Options',
+                     'X-Frame-Options', 'Referrer-Policy', 'Permissions-Policy'):
+            self.assertIn(name, h, f'{name} missing from an SOP FileResponse')
+
+    def test_csp_still_forbids_inline_script(self):
+        from django.http import HttpResponse
+        csp = self._headers_for(HttpResponse('x'))['Content-Security-Policy']
+        script_src = [d for d in csp.split(';') if 'script-src' in d][0]
+        self.assertNotIn("'unsafe-inline'", script_src)
