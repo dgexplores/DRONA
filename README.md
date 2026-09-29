@@ -16,18 +16,31 @@ Their Head of Department and the Super Admin build courses and track progress.
 
 ## Screens
 
-Captured from the live site, signed in as each role. `05` and `06` are in Hindi — that account's
-language preference is `hi`, which is the evidence for the bilingual claim.
+All 38 live captures live in [`images_project/`](images_project/), grouped by the role that can
+reach each screen. A selection:
 
 | | |
 |---|---|
-| ![Login page](docs/screenshots/01-login.png) | ![Staff dashboard](docs/screenshots/02-staff-dashboard.png) |
-| ![Course catalogue](docs/screenshots/03-course-catalog.png) | ![Course 9 lessons](docs/screenshots/04-course-9-lesson.png) |
-| ![Watch-progress report](docs/screenshots/05-watch-progress-report.png) | ![HR dashboard](docs/screenshots/06-hr-dashboard.png) |
+| ![Login](images_project/01-public/01-login.png) | ![Staff dashboard](images_project/02-staff/01-dashboard.png) |
+| ![Video lesson](images_project/02-staff/06-lesson-video.png) | ![Course detail](images_project/02-staff/05-course-detail.png) |
+| ![Watch-progress report](images_project/04-hod/02-watch-progress.png) | ![HR analytics](images_project/04-hod/01-hr-dashboard.png) |
+| ![AI quiz builder](images_project/04-hod/11-ai-quiz-generator.png) | ![Certificate directory](images_project/05-admin/02-certificate-directory.png) |
 
-![Certificate directory](docs/screenshots/07-certificate-directory.png)
+**Bilingual** — the same screens in हिन्दी, which is the evidence the translation layer is real:
 
-Full set with what each screen demonstrates: [`docs/screenshots/`](docs/screenshots/).
+| | |
+|---|---|
+| ![Dashboard (Hindi)](images_project/03-hindi/01-dashboard-hi.png) | ![Course content (Hindi)](images_project/03-hindi/02-course-detail-hi.png) |
+
+| Folder | Count | What |
+|---|---|---|
+| [`01-public/`](images_project/01-public/) | 5 | Login · register · password reset · 404 · public certificate verify |
+| [`02-staff/`](images_project/02-staff/) | 8 | Dashboard · profile · certificates · calendar · course · video lessons · quiz |
+| [`03-hindi/`](images_project/03-hindi/) | 3 | The bilingual layer, in Hindi |
+| [`04-hod/`](images_project/04-hod/) | 11 | Analytics · watch-progress · console · courses · enrol · sessions · roster import · AI quiz builder |
+| [`05-admin/`](images_project/05-admin/) | 11 | Certificate directory · all-department analytics · account, course, module and lesson editors |
+
+Indexed with what each screen demonstrates: [`images_project/README.md`](images_project/README.md).
 
 ---
 
