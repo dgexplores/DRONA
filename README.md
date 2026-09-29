@@ -11,6 +11,7 @@ Their Head of Department and the Super Admin build courses and track progress.
 | **Live app** | <https://dronav2.onrender.com> |
 | **Sign in** | <https://dronav2.onrender.com/login/> |
 | **Source** | <https://github.com/dgexplores/DRONA> |
+| **Project report** | [`report3.0.docx`](docs/report/report3.0.docx) · [PDF](docs/report/report3.0.pdf) — 51 pages |
 
 ---
 
@@ -130,9 +131,11 @@ so a run leaves the working tree clean.
 
 | Document | What it holds |
 |---|---|
+| [`docs/report/report3.0.docx`](docs/report/report3.0.docx) | **The project report** — 51 pages: requirements, methodology and techniques, modules, results, conclusion. [PDF](docs/report/report3.0.pdf) for viewing |
 | [`ENGINEERING.md`](ENGINEERING.md) | Invariants, review checklist, and every trap this codebase has hit — **read before changing behaviour** |
 | [`HANDOFF.md`](HANDOFF.md) | Deploy state, outstanding work, how to verify from the repo |
 | [`ROADMAP.md`](ROADMAP.md) | Agreed-but-unbuilt work and why |
+| [`images_project/`](images_project/) | 38 screenshots of every interface, indexed |
 | [`render.yaml`](render.yaml) | Deployment config |
 
 **Deploy note:** `render.yaml` is Blueprint-authoritative but **Auto Sync is off** — config
