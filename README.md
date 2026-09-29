@@ -15,6 +15,7 @@ Their Head of Department and the Super Admin build courses and track progress.
 | **Presentation** | [`finalppt.pptx`](docs/presentation/finalppt.pptx) · [PDF](docs/presentation/finalppt.pdf) — 10 slides |
 | **Presentation script** | [`SCRIPT.md`](docs/presentation/SCRIPT.md) — word-for-word, 10–12 min, with Q&A prep |
 | **Project guide** | [`PROJECT-GUIDE.md`](docs/PROJECT-GUIDE.md) — what it is, how it works, architecture, features, testing |
+| ~~Original draft~~ | [`finalppt.ORIGINAL-DRAFT.pptx`](docs/presentation/finalppt.ORIGINAL-DRAFT.pptx) — kept for history only, **not accurate**. It claims a React/Tailwind + FastAPI architecture and an AI personalisation feature that were never built. Do not present it. |
 
 ---
 
@@ -138,6 +139,7 @@ so a run leaves the working tree clean.
 | [`docs/presentation/finalppt.pptx`](docs/presentation/finalppt.pptx) | **The presentation** — 10 slides covering problem, solution, architecture, the AI path, and deployment. [PDF](docs/presentation/finalppt.pdf) for viewing |
 | [`docs/presentation/SCRIPT.md`](docs/presentation/SCRIPT.md) | **The presentation script** — word-for-word speaking script with per-slide timings, optional lines to cut, and prepared answers to the likely questions (including the honest "what is not finished") |
 | [`docs/PROJECT-GUIDE.md`](docs/PROJECT-GUIDE.md) | **The project guide** — plain-language walkthrough: what it is, who it is for, every feature, the end-to-end journey, the four architecture layers, how the 203 tests are organised, the three vulnerabilities found and fixed, deployment, and the known limitations |
+| [`docs/presentation/finalppt.ORIGINAL-DRAFT.pptx`](docs/presentation/finalppt.ORIGINAL-DRAFT.pptx) | **The original draft deck — superseded, do not present.** Archived only so the correction history is visible. It contains a React/Tailwind + FastAPI architecture and an AI personalisation feature that were never built, plus a slide-overflow defect. The corrected deck is `finalppt.pptx` above |
 | [`ENGINEERING.md`](ENGINEERING.md) | Invariants, review checklist, and every trap this codebase has hit — **read before changing behaviour** |
 | [`HANDOFF.md`](HANDOFF.md) | Deploy state, outstanding work, how to verify from the repo |
 | [`ROADMAP.md`](ROADMAP.md) | Agreed-but-unbuilt work and why |
