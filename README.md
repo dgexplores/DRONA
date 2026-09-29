@@ -14,6 +14,23 @@ Their Head of Department and the Super Admin build courses and track progress.
 
 ---
 
+## Screens
+
+Captured from the live site, signed in as each role. `05` and `06` are in Hindi — that account's
+language preference is `hi`, which is the evidence for the bilingual claim.
+
+| | |
+|---|---|
+| ![Login page](docs/screenshots/01-login.png) | ![Staff dashboard](docs/screenshots/02-staff-dashboard.png) |
+| ![Course catalogue](docs/screenshots/03-course-catalog.png) | ![Course 9 lessons](docs/screenshots/04-course-9-lesson.png) |
+| ![Watch-progress report](docs/screenshots/05-watch-progress-report.png) | ![HR dashboard](docs/screenshots/06-hr-dashboard.png) |
+
+![Certificate directory](docs/screenshots/07-certificate-directory.png)
+
+Full set with what each screen demonstrates: [`docs/screenshots/`](docs/screenshots/).
+
+---
+
 ## Run it locally
 
 ```bash
