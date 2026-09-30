@@ -56,11 +56,12 @@ Think of a restaurant kitchen. Orders come in at the front, get prepared in the
 middle, and the finished plate comes out. Our system works the same way, in
 **four steps**:
 
-```
-   USERS  →  THE PAGES  →  THE BRAIN  →  THE DATA
-  (people)   (what you    (the rules)   (where facts
-              see)          and logic)     are stored)
-```
+| Step | Layer | What it is | In plain words |
+|---|---|---|---|
+| 1 | **Users** | Staff, HOD, admin | The people using it |
+| 2 | **The pages** | 38 server-rendered screens | What you actually see on screen |
+| 3 | **The brain** | Seven modules | The rules — what you are allowed to see |
+| 4 | **The data** | PostgreSQL database | Where the facts are kept |
 
 ### Step 1 — Users
 Three kinds of person: **staff** (learn), **HOD** (heads a department, sees
