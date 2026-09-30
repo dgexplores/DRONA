@@ -172,7 +172,247 @@ The whole journey, in plain words:
 
 ---
 
-## 7. Three things that make it trustworthy
+## 7. How a certificate is made and checked
+
+This is the feature with the most moving parts, so it is worth explaining twice:
+first in plain words, then with the actual code.
+
+### Part A — In plain words
+
+**When you get one.** Only after **two** separate things happen:
+
+1. You finish **every lesson** in the course
+2. You **pass the quiz**
+
+Both are required. Pass the quiz but skip a lesson and you get a message telling
+you to finish the lessons. Finish the lessons but fail the quiz and nothing
+happens. The rule exists so nobody gets a certificate just for turning up.
+
+**It is automatic.** You do not apply for anything. The moment the second
+condition is met, the certificate is made and waiting for you.
+
+**Each one has a random number.** Like a serial number on an engine, but random
+rather than sequential:
+
+```
+SRMS-CERT-2026-A3F91C2E
+```
+
+Because it is random, nobody can work out someone else's number by trying the
+next one.
+
+**A QR code is printed on it.** A QR code is the square pattern a phone camera
+reads. It contains nothing except one web address with the certificate number in
+it.
+
+**How someone checks it:**
+
+| Step | What happens |
+|---|---|
+| 1 | They scan the QR code with a phone camera |
+| 2 | A web page opens — **no login, no app, no account** |
+| 3 | The page looks that number up in the real database |
+| 4 | Found → *"This certificate is genuine"*, with the course, the date, and a **shortened name** |
+| 5 | Not found → *"This certificate is not valid"* — a clean page, not an error |
+
+**Why the name is shortened.** The check page is open to everybody. If it showed
+full names, then anyone holding one certificate could open their own page, change
+the number in the address bar, and slowly read through the college's **entire
+staff list** — every name, one at a time.
+
+So the page shows only the **first name and the first letter of the surname**:
+`Anant S.`
+
+That still proves *whose* certificate it is. But a certificate can be framed,
+shown to an employer, or held up in public without handing a stranger someone's
+full identity.
+
+**Public to check, private to download.** Checking is open to anyone. Downloading
+the actual PDF requires being logged in as the person who owns it, or as an
+admin. So the world can confirm a certificate is real, but only the owner can
+take the document.
+
+**Why it cannot be faked.** Someone could write their own name on a blank
+certificate and draw a convincing fake QR code. It still fails, because the QR
+code only contains a **number**, and that number has to already exist in the real
+system. A number nobody has heard of returns "not valid". You cannot invent a
+valid number without actually finishing the course.
+
+### Part B — The technical version
+
+#### The gate that issues it
+
+Only one place in the whole system can create a certificate — the quiz submission
+handler, `apps/quizzes/views.py`:
+
+```python
+score_percent = round((correct_count / total_q) * 100, 1)
+passed = score_percent >= quiz.passing_score
+
+if course:
+    enrollment, _ = Enrollment.objects.get_or_create(
+        staff_user=request.user, course=course
+    )
+    if passed and enrollment.progress_percent >= 100:
+        cert = generate_certificate_pdf(request.user, course, request_host=host)
+        log_audit(request.user, 'certificate_issued', cert, ...)
+    elif passed:
+        messages.success(request,
+            "You passed the quiz! Complete remaining video/PDF lessons "
+            "to receive your certificate.")
+```
+
+`passed and progress_percent >= 100` — the two-condition gate. The middle branch
+is why a user who passed but has lessons left is told exactly what to do.
+
+#### The certificate number
+
+`apps/certificates/models.py`:
+
+```python
+def generate_cert_id():
+    year = timezone.now().year
+    return f"SRMS-CERT-{year}-{uuid.uuid4().hex[:8].upper()}"
+
+class Certificate(models.Model):
+    certificate_id = models.CharField(max_length=50, unique=True, default=generate_cert_id)
+    staff_user = models.ForeignKey(...)
+    course     = models.ForeignKey(...)
+
+    class Meta:
+        unique_together = ('staff_user', 'course')
+```
+
+- `uuid4()` — random, not sequential, so IDs cannot be enumerated
+- `unique=True` on the ID — gives a unique index for the verification lookup
+- `unique_together` — one certificate per person per course, enforced by the
+  database rather than by application code
+
+**These IDs are not hashed, and that is deliberate.** A hash is one-way, so the
+verification page could not look the certificate up by ID. The ID is a **public
+lookup token by design** — which is exactly why the name on the page is masked.
+
+#### Building the PDF and the QR
+
+`apps/certificates/pdf_builder.py`:
+
+```python
+cert, created = Certificate.objects.get_or_create(
+    staff_user=staff_user, course=course
+)                                     # <- get_or_create gives the "only one" behaviour
+
+verify_url = _build_verify_url(request_host, cert.certificate_id)
+qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_M)
+```
+
+`get_or_create` is what makes a repeat attempt return the existing certificate
+rather than making a second one.
+
+The verify URL prefers a configured base so a printed certificate always points
+at the real https site:
+
+```python
+def _build_verify_url(request_host="127.0.0.1:8000", cert_id=""):
+    base = (getattr(_s, 'SRMS_BASE_URL', '') or '').rstrip('/')
+    if base:
+        if '://' not in base:
+            base = f"https://{base}"
+        return f"{base}/verify/{cert_id}/"
+    scheme = 'https' if ('railway.app' in host or 'srms.ac.in' in host) else 'http'
+    return f"{scheme}://{host}/verify/{cert_id}/"
+```
+
+The QR is generated **before** the PDF so it can be drawn onto the page.
+`ERROR_CORRECT_M` means the code still scans if the certificate gets scuffed,
+folded or slightly covered in a frame.
+
+#### The public verification page
+
+`apps/certificates/views.py` — note there is **no `@login_required`**:
+
+```python
+def verify_certificate_view(request, cert_id):
+    try:
+        certificate = Certificate.objects.select_related(
+            'staff_user', 'course').get(certificate_id=cert_id)
+        is_valid = True
+    except Certificate.DoesNotExist:
+        certificate = None
+        is_valid = False
+    ...
+```
+
+A made-up ID renders the "not valid" template. It does **not** 500, and it does
+not return a different response shape — so the page cannot be used to discover
+which IDs are real.
+
+The name masking:
+
+```python
+def _masked_name(user):
+    """First name plus last initial.
+
+    The verification page is public by design -- it is what the QR code on a
+    printed certificate resolves to -- so it must confirm a match without
+    publishing a full staff roster to anyone who holds a certificate ID.
+    """
+    first = (user.first_name or '').strip()
+    last  = (user.last_name or '').strip()
+    if first and last:
+        return f"{first} {last[0].upper()}."
+    ...
+    return "SRMS staff member"
+```
+
+#### The protected download
+
+Verification is public, but the document is not. `download_certificate_pdf`:
+
+```python
+@login_required
+def download_certificate_pdf(request, cert_id):
+    qs = Certificate.objects.filter(certificate_id=cert_id)
+    if not request.user.is_manager:
+        qs = qs.filter(staff_user=request.user)     # scoped to the owner
+    certificate = get_object_or_404(qs)
+
+    if not certificate.pdf_file or not os.path.exists(certificate.pdf_file.path):
+        generate_certificate_pdf(...)               # self-healing
+        certificate.refresh_from_db()
+```
+
+Three things worth noting: it requires a login; a non-manager is filtered to
+their **own** certificates so one user cannot download another's; and a missing
+file is **regenerated** rather than returning a dead link.
+
+#### The routes
+
+| URL | Logged in? | Who can use it |
+|---|---|---|
+| `/verify/<cert_id>/` | **No** | Anyone — this is what the QR opens |
+| `/certificates/` | Yes | Your own certificate list |
+| `/certificates/<cert_id>/download/` | Yes | The owner, or any manager |
+
+Note the verify route sits at the top level, deliberately outside
+`/certificates/`, which is behind a login.
+
+#### Why the whole design holds up
+
+| Attack | What stops it |
+|---|---|
+| Forging a certificate by hand | The QR holds a number; an unknown number returns "not valid" |
+| Guessing someone else's number | `uuid4()` is random and long — not enumerable |
+| Getting two certificates for one course | `unique_together` in the database |
+| Self-reporting 100% progress | Progress is derived from `LessonProgress` rows, not accepted from the client |
+| Passing the quiz without doing the work | Watch time is accumulated server-side and capped; the client's `completed` flag is discarded for video |
+| Using a public check page to harvest staff names | Only first name + last initial is ever rendered |
+| Downloading someone else's certificate | `@login_required` plus an owner filter on the queryset |
+
+Every one of those has a test in the suite, so the guarantee cannot quietly rot.
+
+---
+
+## 8. Three things that make it trustworthy
 
 ### Progress is worked out by the server, not claimed by the user
 If you change something in your browser, the server ignores it. You cannot mark
@@ -191,7 +431,7 @@ works.
 
 ---
 
-## 8. Three real bugs we found and fixed
+## 9. Three real bugs we found and fixed
 
 We didn't just take a checklist and tick it off. We tried to **break our own
 system**, and found three genuine problems:
@@ -208,7 +448,7 @@ automated test, so it cannot come back.
 
 ---
 
-## 9. What is honest about the limits
+## 10. What is honest about the limits
 
 We think a project that admits its gaps is stronger than one that claims
 perfection. So:
@@ -224,7 +464,7 @@ perfection. So:
 
 ---
 
-## 10. The short version
+## 11. The short version
 
 > SRMS Drona is a training website for college office staff, built with Django
 > and PostgreSQL, hosted free in the cloud.
