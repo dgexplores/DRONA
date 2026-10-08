@@ -1,10 +1,22 @@
 # DRONA — Staff Learning & Training Platform
 
+[![CI](https://github.com/dgexplores/DRONA/actions/workflows/ci.yml/badge.svg)](https://github.com/dgexplores/DRONA/actions/workflows/ci.yml)
+
 A training portal for the **non-teaching staff** of SRMS Group of Institutions. Staff watch short
 SOP videos, take quizzes, earn QR-verifiable certificates, and see what training is still pending.
 Their Head of Department and the Super Admin build courses and track progress.
 
 **Django 6.0.8 · Python 3.12 · PostgreSQL · 203 tests · 0 dependency advisories · English/हिन्दी**
+
+## 60-second brief
+
+Staff training portal: SOP videos, quizzes, QR-verifiable certificates, HOD/admin progress tracking. Stack: Django 6, Python 3.12, PostgreSQL (SQLite local), server-rendered HTML + vanilla JS, Google Gemini for quiz generation. Live links in the table below verified HTTP 200 on 2026-10-08.
+
+| | |
+|---|---|
+| Code | [`apps/`](apps/) — courses, quizzes, certificates, analytics · [`srms_dorna/`](srms_dorna/) — settings and URLs · [`templates/`](templates/) + [`static/`](static/) |
+| Docs | [`docs/PROJECT-GUIDE.md`](docs/PROJECT-GUIDE.md) — plain-language guide · [`docs/TECHNICAL.md`](docs/TECHNICAL.md) — deep dive · [`ENGINEERING.md`](ENGINEERING.md) — read before changing behaviour |
+| Ops | [`render.yaml`](render.yaml) · [`ROADMAP.md`](ROADMAP.md) · [`HANDOFF.md`](HANDOFF.md) |
 
 | | |
 |---|---|
