@@ -1,14 +1,16 @@
 # DRONA — Staff Learning & Training Platform
 
+[![Open the live DRONA app](https://img.shields.io/badge/Open%20DRONA-Live%20app-087f72?style=for-the-badge)](https://dronav2.onrender.com/)
+
+**[Sign in with your employee ID →](https://dronav2.onrender.com/login/)**
+
+<sub>Deployment verified on 26 November 2026.</sub>
+
 [![CI](https://github.com/dgexplores/DRONA/actions/workflows/ci.yml/badge.svg)](https://github.com/dgexplores/DRONA/actions/workflows/ci.yml)
 
 A training portal for the **non-teaching staff** of SRMS Group of Institutions. Staff watch short
 SOP videos, take quizzes, earn QR-verifiable certificates, and see what training is still pending.
 Their Head of Department and the Super Admin build courses and track progress.
-
-**Deployment** — [Open DRONA](https://dronav2.onrender.com/) · [Sign in](https://dronav2.onrender.com/login/)
-
-Verified on 26 November 2026. The app redirects signed-out visitors to the sign-in page, which returned HTTP 200.
 
 **Django 6.0.8 · Python 3.12 · PostgreSQL · 203 tests · 0 dependency advisories · English/हिन्दी**
 
