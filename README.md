@@ -6,11 +6,15 @@ A training portal for the **non-teaching staff** of SRMS Group of Institutions. 
 SOP videos, take quizzes, earn QR-verifiable certificates, and see what training is still pending.
 Their Head of Department and the Super Admin build courses and track progress.
 
+**Deployment** — [Open DRONA](https://dronav2.onrender.com/) · [Sign in](https://dronav2.onrender.com/login/)
+
+Verified on 26 November 2026. The app redirects signed-out visitors to the sign-in page, which returned HTTP 200.
+
 **Django 6.0.8 · Python 3.12 · PostgreSQL · 203 tests · 0 dependency advisories · English/हिन्दी**
 
 ## 60-second brief
 
-Staff training portal: SOP videos, quizzes, QR-verifiable certificates, HOD/admin progress tracking. Stack: Django 6, Python 3.12, PostgreSQL (SQLite local), server-rendered HTML + vanilla JS, Google Gemini for quiz generation. Live links in the table below verified HTTP 200 on 2026-10-08.
+Staff training portal: SOP videos, quizzes, QR-verifiable certificates, HOD/admin progress tracking. Stack: Django 6, Python 3.12, PostgreSQL (SQLite local), server-rendered HTML + vanilla JS, Google Gemini for quiz generation.
 
 | | |
 |---|---|
@@ -20,8 +24,6 @@ Staff training portal: SOP videos, quizzes, QR-verifiable certificates, HOD/admi
 
 | | |
 |---|---|
-| **Live app** | <https://dronav2.onrender.com> |
-| **Sign in** | <https://dronav2.onrender.com/login/> |
 | **Source** | <https://github.com/dgexplores/DRONA> |
 | **Project report** | [`report3.0.docx`](docs/report/report3.0.docx) · [PDF](docs/report/report3.0.pdf) — 51 pages |
 | **Presentation** | [`finalppt.pptx`](docs/presentation/finalppt.pptx) · [PDF](docs/presentation/finalppt.pdf) — 10 slides |
